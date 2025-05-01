@@ -40,6 +40,8 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:${jjwtVersion}")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
+    testImplementation("com.h2database:h2")
+
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
