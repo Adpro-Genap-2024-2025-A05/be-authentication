@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.beauthentication.model;
 
+import id.ac.ui.cs.advprog.beauthentication.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,12 +30,29 @@ public class Caregiver extends User {
     @Builder.Default
     private List<WorkingSchedule> workingSchedules = new ArrayList<>();
 
+    @PrePersist
+    @Override
+    protected void onCreate() {
+        super.onCreate();
+        if (getRole() == null) {
+            setRole(Role.CAREGIVER);
+        }
+    }
+
     public void addWorkingSchedule(WorkingSchedule schedule) {
+        if (schedule == null) {
+            return;
+        }
+        
         workingSchedules.add(schedule);
         schedule.setCaregiver(this);
     }
 
     public void removeWorkingSchedule(WorkingSchedule schedule) {
+        if (schedule == null || !workingSchedules.contains(schedule)) {
+            return;
+        }
+        
         workingSchedules.remove(schedule);
         schedule.setCaregiver(null);
     }
