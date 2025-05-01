@@ -18,20 +18,20 @@ class RoleTest {
     @Nested
     class ContainsMethodTests {
         @Test
-        void containsValidRoles_ReturnsTrue() {
+        void containsValidRolesReturnsTrue() {
             assertTrue(Role.contains("PACILIAN"));
             assertTrue(Role.contains("CAREGIVER"));
         }
 
         @Test
-        void containsInvalidStringRoles_ReturnsFalse() {
+        void containsInvalidStringRolesReturnsFalse() {
             assertFalse(Role.contains("ADMIN"));
             assertFalse(Role.contains("USER"));
             assertFalse(Role.contains(""));
         }
         
         @Test
-        void containsNullParam_ReturnsFalse() {
+        void containsNullParamReturnsFalse() {
             assertFalse(Role.contains(null));
         }
     }
