@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.beauthentication.repository;
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
 import id.ac.ui.cs.advprog.beauthentication.model.Pacilian;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -32,7 +33,104 @@ class PacilianRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        testPacilian = Pacilian.builder()
+        testPacilian = createTestPacilian();
+        pacilianRepository.deleteAll();
+    }
+
+    @Nested
+    class SaveOperationTests {
+        @Test
+        void saveShouldPersistPacilian() {
+            Pacilian savedPacilian = pacilianRepository.save(testPacilian);
+            
+            assertNotNull(savedPacilian.getId());
+            assertEquals(TEST_EMAIL, savedPacilian.getEmail());
+            assertEquals(TEST_NIK, savedPacilian.getNik());
+            assertEquals(MEDICAL_HISTORY, savedPacilian.getMedicalHistory());
+            assertEquals(Role.PACILIAN, savedPacilian.getRole());
+        }
+        
+        @Test
+        void roleSettingShouldDefaultToPacilian() {
+            Pacilian pacilianWithoutRole = createPacilianWithoutRole();
+            
+            Pacilian savedPacilian = pacilianRepository.save(pacilianWithoutRole);
+            entityManager.flush();
+            entityManager.clear();
+            
+            Optional<Pacilian> retrievedPacilian = pacilianRepository.findById(savedPacilian.getId());
+            
+            assertTrue(retrievedPacilian.isPresent());
+            assertEquals(Role.PACILIAN, retrievedPacilian.get().getRole());
+        }
+    }
+    
+    @Nested
+    class FindOperationTests {
+        @Test
+        void findByIdWhenPacilianExistsShouldReturnPacilian() {
+            Pacilian persistedPacilian = persistTestPacilian();
+            
+            Optional<Pacilian> found = pacilianRepository.findById(persistedPacilian.getId());
+            
+            assertTrue(found.isPresent());
+            assertEquals(TEST_EMAIL, found.get().getEmail());
+            assertEquals(MEDICAL_HISTORY, found.get().getMedicalHistory());
+        }
+        
+        @Test
+        void findByIdWhenPacilianDoesNotExistShouldReturnEmpty() {
+            Optional<Pacilian> found = pacilianRepository.findById("non-existent-id");
+            
+            assertFalse(found.isPresent());
+        }
+        
+        @Test
+        void findAllWhenMultiplePaciliansExistShouldReturnAllPacilians() {
+            persistTestPacilian();
+            persistAnotherPacilian();
+            
+            List<Pacilian> pacilians = pacilianRepository.findAll();
+            
+            assertEquals(2, pacilians.size());
+        }
+    }
+    
+    @Nested
+    class DeleteOperationTests {
+        @Test
+        void deleteShouldRemovePacilian() {
+            Pacilian persistedPacilian = persistTestPacilian();
+            
+            pacilianRepository.delete(persistedPacilian);
+            entityManager.flush();
+            
+            Optional<Pacilian> found = pacilianRepository.findById(persistedPacilian.getId());
+            assertFalse(found.isPresent());
+        }
+    }
+    
+    @Nested
+    class SpecialFieldsTests {
+        @Test
+        void medicalHistoryFieldShouldPersistLargeText() {
+            String longMedicalHistory = createLongMedicalHistory();
+            
+            testPacilian.setMedicalHistory(longMedicalHistory);
+            
+            Pacilian savedPacilian = pacilianRepository.save(testPacilian);
+            entityManager.flush();
+            entityManager.clear();
+            
+            Optional<Pacilian> retrievedPacilian = pacilianRepository.findById(savedPacilian.getId());
+            
+            assertTrue(retrievedPacilian.isPresent());
+            assertEquals(longMedicalHistory, retrievedPacilian.get().getMedicalHistory());
+        }
+    }
+    
+    private Pacilian createTestPacilian() {
+        return Pacilian.builder()
                 .email(TEST_EMAIL)
                 .password("secure123")
                 .name("Test Patient")
@@ -42,44 +140,27 @@ class PacilianRepositoryTest {
                 .role(Role.PACILIAN)
                 .medicalHistory(MEDICAL_HISTORY)
                 .build();
-        
-        pacilianRepository.deleteAll();
-    }
-
-    @Test
-    void testSaveShouldPersistPacilian() {
-        Pacilian savedPacilian = pacilianRepository.save(testPacilian);
-        
-        assertNotNull(savedPacilian.getId());
-        assertEquals(TEST_EMAIL, savedPacilian.getEmail());
-        assertEquals(TEST_NIK, savedPacilian.getNik());
-        assertEquals(MEDICAL_HISTORY, savedPacilian.getMedicalHistory());
-        assertEquals(Role.PACILIAN, savedPacilian.getRole());
     }
     
-    @Test
-    void testFindByIdWhenPacilianExistsShouldReturnPacilian() {
+    private Pacilian persistTestPacilian() {
         Pacilian persistedPacilian = entityManager.persist(testPacilian);
         entityManager.flush();
-        
-        Optional<Pacilian> found = pacilianRepository.findById(persistedPacilian.getId());
-        
-        assertTrue(found.isPresent());
-        assertEquals(TEST_EMAIL, found.get().getEmail());
-        assertEquals(MEDICAL_HISTORY, found.get().getMedicalHistory());
+        return persistedPacilian;
     }
     
-    @Test
-    void testFindByIdWhenPacilianDoesNotExistShouldReturnEmpty() {
-        Optional<Pacilian> found = pacilianRepository.findById("non-existent-id");
-        
-        assertFalse(found.isPresent());
+    private Pacilian createPacilianWithoutRole() {
+        return Pacilian.builder()
+                .email("noRole@example.com")
+                .password("password123")
+                .name("No Role Patient")
+                .nik("9999888877776666")
+                .address("789 No Role St.")
+                .phoneNumber("0855443322")
+                .medicalHistory("Healthy")
+                .build();
     }
     
-    @Test
-    void testFindAllWhenMultiplePaciliansExistShouldReturnAllPacilians() {
-        entityManager.persist(testPacilian);
-        
+    private void persistAnotherPacilian() {
         Pacilian anotherPacilian = Pacilian.builder()
                 .email("another@example.com")
                 .password("password789")
@@ -93,65 +174,15 @@ class PacilianRepositoryTest {
         
         entityManager.persist(anotherPacilian);
         entityManager.flush();
-        
-        List<Pacilian> pacilians = pacilianRepository.findAll();
-        
-        assertEquals(2, pacilians.size());
     }
     
-    @Test
-    void testDeleteShouldRemovePacilian() {
-        Pacilian persistedPacilian = entityManager.persist(testPacilian);
-        entityManager.flush();
-        
-        pacilianRepository.delete(persistedPacilian);
-        entityManager.flush();
-        
-        Optional<Pacilian> found = pacilianRepository.findById(persistedPacilian.getId());
-        assertFalse(found.isPresent());
-    }
-    
-    @Test
-    void testRoleSettingShouldDefaultToPacilian() {
-        Pacilian pacilianWithoutRole = Pacilian.builder()
-                .email("noRole@example.com")
-                .password("password123")
-                .name("No Role Patient")
-                .nik("9999888877776666")
-                .address("789 No Role St.")
-                .phoneNumber("0855443322")
-                .medicalHistory("Healthy")
-                .build();
-        
-        Pacilian savedPacilian = pacilianRepository.save(pacilianWithoutRole);
-        entityManager.flush();
-        entityManager.clear();
-        
-        Optional<Pacilian> retrievedPacilian = pacilianRepository.findById(savedPacilian.getId());
-        
-        assertTrue(retrievedPacilian.isPresent());
-        assertEquals(Role.PACILIAN, retrievedPacilian.get().getRole());
-    }
-    
-    @Test
-    void testMedicalHistoryFieldShouldPersistLargeText() {
-        String longMedicalHistory = "Patient has a long history of various conditions including: " +
-                "1. Hypertension diagnosed in 2015\n" +
-                "2. Type 2 Diabetes diagnosed in 2018\n" +
-                "3. Underwent knee replacement surgery in 2020\n" +
-                "4. Currently on medication for cholesterol management\n" +
-                "5. Family history of heart disease\n" +
-                "Regular check-ups show stable condition with current medication regimen.";
-        
-        testPacilian.setMedicalHistory(longMedicalHistory);
-        
-        Pacilian savedPacilian = pacilianRepository.save(testPacilian);
-        entityManager.flush();
-        entityManager.clear();
-        
-        Optional<Pacilian> retrievedPacilian = pacilianRepository.findById(savedPacilian.getId());
-        
-        assertTrue(retrievedPacilian.isPresent());
-        assertEquals(longMedicalHistory, retrievedPacilian.get().getMedicalHistory());
+    private String createLongMedicalHistory() {
+        return "Patient has a long history of various conditions including: " +
+                "1. Medical Record Panjang 1\n" +
+                "2. Medical Record Panjang 2\n" +
+                "3. Medical Record Panjang 3\n" +
+                "4. Medical Record Panjang 4\n" +
+                "5. Medical Record Panjang 5\n" +
+                "Regular check up ...\n";
     }
 }
