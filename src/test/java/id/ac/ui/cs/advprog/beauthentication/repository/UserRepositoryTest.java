@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.beauthentication.repository;
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
 import id.ac.ui.cs.advprog.beauthentication.model.User;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -30,7 +31,104 @@ class UserRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder()
+        testUser = createTestUser();
+        userRepository.deleteAll();
+    }
+
+    @Nested
+    class FindByEmailTests {
+        @Test
+        void whenUserExists_shouldReturnUser() {
+            persistTestUser();
+
+            Optional<User> found = userRepository.findByEmail(TEST_EMAIL);
+
+            assertTrue(found.isPresent());
+            assertEquals(TEST_EMAIL, found.get().getEmail());
+        }
+
+        @Test
+        void whenUserDoesNotExist_shouldReturnEmpty() {
+            Optional<User> found = userRepository.findByEmail("nonexistent@example.com");
+
+            assertFalse(found.isPresent());
+        }
+    }
+
+    @Nested
+    class ExistsByEmailTests {
+        @Test
+        void whenUserExists_shouldReturnTrue() {
+            persistTestUser();
+
+            boolean exists = userRepository.existsByEmail(TEST_EMAIL);
+
+            assertTrue(exists);
+        }
+
+        @Test
+        void whenUserDoesNotExist_shouldReturnFalse() {
+            boolean exists = userRepository.existsByEmail("nonexistent@example.com");
+
+            assertFalse(exists);
+        }
+    }
+
+    @Nested
+    class ExistsByNikTests {
+        @Test
+        void whenUserExists_shouldReturnTrue() {
+            persistTestUser();
+
+            boolean exists = userRepository.existsByNik(TEST_NIK);
+
+            assertTrue(exists);
+        }
+
+        @Test
+        void whenUserDoesNotExist_shouldReturnFalse() {
+            boolean exists = userRepository.existsByNik("9876543210987654");
+
+            assertFalse(exists);
+        }
+    }
+
+    @Nested
+    class SaveTests {
+        @Test
+        void shouldGenerateId() {
+            User savedUser = userRepository.save(testUser);
+
+            assertNotNull(savedUser.getId());
+        }
+
+        @Test
+        void whenDuplicateEmail_shouldFailWithConstraintViolation() {
+            persistTestUser();
+
+            User duplicateEmailUser = createUserWithDuplicateEmail();
+
+            assertThrows(Exception.class, () -> {
+                userRepository.save(duplicateEmailUser);
+                entityManager.flush();
+            });
+        }
+
+        @Test
+        void whenDuplicateNik_shouldFailWithConstraintViolation() {
+            persistTestUser();
+
+            User duplicateNikUser = createUserWithDuplicateNik();
+
+            assertThrows(Exception.class, () -> {
+                userRepository.save(duplicateNikUser);
+                entityManager.flush();
+            });
+        }
+    }
+
+    private User createTestUser() {
+        return User.builder()
                 .email(TEST_EMAIL)
                 .password("password123")
                 .name("Test User")
@@ -39,96 +137,27 @@ class UserRepositoryTest {
                 .phoneNumber("1234567890")
                 .role(Role.PACILIAN)
                 .build();
-        
-        userRepository.deleteAll();
     }
 
-    @Test
-    void testFindByEmailWhenUserExistsShouldReturnUser() {
+    private void persistTestUser() {
         entityManager.persist(testUser);
         entityManager.flush();
-        
-        Optional<User> found = userRepository.findByEmail(TEST_EMAIL);
-        
-        assertTrue(found.isPresent());
-        assertEquals(TEST_EMAIL, found.get().getEmail());
     }
-    
-    @Test
-    void testFindByEmailWhenUserDoesNotExistShouldReturnEmpty() {
-        Optional<User> found = userRepository.findByEmail("nonexistent@example.com");
-        
-        assertFalse(found.isPresent());
-    }
-    
-    @Test
-    void testExistsByEmailWhenUserExistsShouldReturnTrue() {
-        entityManager.persist(testUser);
-        entityManager.flush();
-        
-        boolean exists = userRepository.existsByEmail(TEST_EMAIL);
-        
-        assertTrue(exists);
-    }
-    
-    @Test
-    void testExistsByEmailWhenUserDoesNotExistShouldReturnFalse() {
-        boolean exists = userRepository.existsByEmail("nonexistent@example.com");
-        
-        assertFalse(exists);
-    }
-    
-    @Test
-    void testExistsByNikWhenUserExistsShouldReturnTrue() {
-        entityManager.persist(testUser);
-        entityManager.flush();
-        
-        boolean exists = userRepository.existsByNik(TEST_NIK);
-        
-        assertTrue(exists);
-    }
-    
-    @Test
-    void testExistsByNikWhenUserDoesNotExistShouldReturnFalse() {
-        boolean exists = userRepository.existsByNik("9876543210987654");
-        
-        assertFalse(exists);
-    }
-    
-    @Test
-    void testSaveShouldGenerateId() {
-        User savedUser = userRepository.save(testUser);
-        
-        assertNotNull(savedUser.getId());
-    }
-    
-    @Test
-    void testSaveWhenDuplicateEmailShouldFailWithConstraintViolation() {
-        entityManager.persist(testUser);
-        entityManager.flush();
-        
-        User duplicateEmailUser = User.builder()
-                .email(TEST_EMAIL) 
+
+    private User createUserWithDuplicateEmail() {
+        return User.builder()
+                .email(TEST_EMAIL)
                 .password("password456")
                 .name("Another User")
-                .nik("9876543210987654") 
+                .nik("9876543210987654")
                 .address("Another Address")
                 .phoneNumber("9876543210")
                 .role(Role.CAREGIVER)
                 .build();
-        
-        assertThrows(Exception.class, () -> {
-            userRepository.save(duplicateEmailUser);
-            entityManager.flush();
-        });
     }
-    
-    @Test
-    void testSaveWhenDuplicateNikShouldFailWithConstraintViolation() {
-        entityManager.persist(testUser);
-        entityManager.flush();
-        
-        User duplicateNikUser = User.builder()
+
+    private User createUserWithDuplicateNik() {
+        return User.builder()
                 .email("another@example.com")
                 .password("password456")
                 .name("Another User")
@@ -137,10 +166,5 @@ class UserRepositoryTest {
                 .phoneNumber("9876543210")
                 .role(Role.CAREGIVER)
                 .build();
-        
-        assertThrows(Exception.class, () -> {
-            userRepository.save(duplicateNikUser);
-            entityManager.flush();
-        });
     }
 }
