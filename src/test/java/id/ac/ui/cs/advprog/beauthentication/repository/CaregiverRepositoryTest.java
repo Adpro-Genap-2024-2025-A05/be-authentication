@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.beauthentication.enums.Role;
 import id.ac.ui.cs.advprog.beauthentication.model.Caregiver;
 import id.ac.ui.cs.advprog.beauthentication.model.WorkingSchedule;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -35,7 +36,141 @@ class CaregiverRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        testCaregiver = Caregiver.builder()
+        testCaregiver = createTestCaregiver();
+        caregiverRepository.deleteAll();
+    }
+
+    @Nested
+    class SaveOperationTests {
+        @Test
+        void saveShouldPersistCaregiverWithWorkingSchedules() {
+            Caregiver savedCaregiver = caregiverRepository.save(testCaregiver);
+            entityManager.flush();
+            entityManager.clear();
+            
+            Optional<Caregiver> retrievedCaregiver = caregiverRepository.findById(savedCaregiver.getId());
+            
+            assertTrue(retrievedCaregiver.isPresent());
+            assertEquals(TEST_EMAIL, retrievedCaregiver.get().getEmail());
+            assertEquals(TEST_SPECIALITY, retrievedCaregiver.get().getSpeciality());
+            assertEquals(TEST_WORK_ADDRESS, retrievedCaregiver.get().getWorkAddress());
+            assertEquals(2, retrievedCaregiver.get().getWorkingSchedules().size());
+            
+            List<WorkingSchedule> schedules = retrievedCaregiver.get().getWorkingSchedules();
+            assertTrue(schedules.stream().anyMatch(s -> s.getDayOfWeek() == DayOfWeek.MONDAY));
+            assertTrue(schedules.stream().anyMatch(s -> s.getDayOfWeek() == DayOfWeek.WEDNESDAY));
+        }
+        
+        @Test
+        void roleSettingShouldDefaultToCaregiverRole() {
+            Caregiver caregiverWithoutRole = createCaregiverWithoutRole();
+            
+            Caregiver savedCaregiver = caregiverRepository.save(caregiverWithoutRole);
+            entityManager.flush();
+            entityManager.clear();
+            
+            Optional<Caregiver> retrievedCaregiver = caregiverRepository.findById(savedCaregiver.getId());
+            
+            assertTrue(retrievedCaregiver.isPresent());
+            assertEquals(Role.CAREGIVER, retrievedCaregiver.get().getRole());
+        }
+    }
+    
+    @Nested
+    class FindOperationTests {
+        @Test
+        void findByIdWhenCaregiverExistsShouldReturnCaregiver() {
+            Caregiver persistedCaregiver = persistTestCaregiver();
+            
+            Optional<Caregiver> found = caregiverRepository.findById(persistedCaregiver.getId());
+            
+            assertTrue(found.isPresent());
+            assertEquals(TEST_EMAIL, found.get().getEmail());
+            assertEquals(TEST_SPECIALITY, found.get().getSpeciality());
+        }
+        
+        @Test
+        void findByIdWhenCaregiverDoesNotExist_shouldReturnEmpty() {
+            Optional<Caregiver> found = caregiverRepository.findById("non-existent-id");
+            
+            assertFalse(found.isPresent());
+        }
+        
+        @Test
+        void findAllWhenMultipleCaregiversExistShouldReturnAllCaregivers() {
+            persistTestCaregiver();
+            persistAnotherCaregiver();
+            
+            List<Caregiver> caregivers = caregiverRepository.findAll();
+            
+            assertEquals(2, caregivers.size());
+        }
+    }
+    
+    @Nested
+    class DeleteOperationTests {
+        @Test
+        void deleteShouldRemoveCaregiverAndWorkingSchedules() {
+            Caregiver persistedCaregiver = persistTestCaregiver();
+            
+            String scheduleId = persistedCaregiver.getWorkingSchedules().get(0).getId();
+            
+            caregiverRepository.delete(persistedCaregiver);
+            entityManager.flush();
+            
+            Optional<Caregiver> foundCaregiver = caregiverRepository.findById(persistedCaregiver.getId());
+            assertFalse(foundCaregiver.isPresent());
+            
+            List<?> scheduleResults = entityManager.getEntityManager()
+                    .createQuery("SELECT w FROM WorkingSchedule w WHERE w.id = :id")
+                    .setParameter("id", scheduleId)
+                    .getResultList();
+            
+            assertTrue(scheduleResults.isEmpty());
+        }
+    }
+    
+    @Nested
+    class WorkingScheduleManagementTests {
+        @Test
+        void shouldAddAndRemoveSchedules() {
+            Caregiver savedCaregiver = caregiverRepository.save(testCaregiver);
+            entityManager.flush();
+            
+            WorkingSchedule fridaySchedule = createWorkingSchedule(DayOfWeek.FRIDAY);
+            
+            savedCaregiver.addWorkingSchedule(fridaySchedule);
+            caregiverRepository.save(savedCaregiver);
+            entityManager.flush();
+            entityManager.clear();
+            
+            Optional<Caregiver> afterAddition = caregiverRepository.findById(savedCaregiver.getId());
+            assertTrue(afterAddition.isPresent());
+            assertEquals(3, afterAddition.get().getWorkingSchedules().size());
+            assertTrue(afterAddition.get().getWorkingSchedules().stream()
+                    .anyMatch(s -> s.getDayOfWeek() == DayOfWeek.FRIDAY));
+            
+            Caregiver caregiverToModify = afterAddition.get();
+            WorkingSchedule scheduleToRemove = caregiverToModify.getWorkingSchedules().stream()
+                    .filter(s -> s.getDayOfWeek() == DayOfWeek.MONDAY)
+                    .findFirst()
+                    .orElseThrow();
+            
+            caregiverToModify.removeWorkingSchedule(scheduleToRemove);
+            caregiverRepository.save(caregiverToModify);
+            entityManager.flush();
+            entityManager.clear();
+            
+            Optional<Caregiver> afterRemoval = caregiverRepository.findById(savedCaregiver.getId());
+            assertTrue(afterRemoval.isPresent());
+            assertEquals(2, afterRemoval.get().getWorkingSchedules().size());
+            assertFalse(afterRemoval.get().getWorkingSchedules().stream()
+                    .anyMatch(s -> s.getDayOfWeek() == DayOfWeek.MONDAY));
+        }
+    }
+    
+    private Caregiver createTestCaregiver() {
+        Caregiver caregiver = Caregiver.builder()
                 .email(TEST_EMAIL)
                 .password("doctorPass123")
                 .name("Dr. Test")
@@ -47,62 +182,19 @@ class CaregiverRepositoryTest {
                 .role(Role.CAREGIVER)
                 .build();
         
-        WorkingSchedule mondaySchedule = WorkingSchedule.builder()
-                .dayOfWeek(DayOfWeek.MONDAY)
-                .build();
+        caregiver.addWorkingSchedule(createWorkingSchedule(DayOfWeek.MONDAY));
+        caregiver.addWorkingSchedule(createWorkingSchedule(DayOfWeek.WEDNESDAY));
         
-        WorkingSchedule wednesdaySchedule = WorkingSchedule.builder()
-                .dayOfWeek(DayOfWeek.WEDNESDAY)
-                .build();
-        
-        testCaregiver.addWorkingSchedule(mondaySchedule);
-        testCaregiver.addWorkingSchedule(wednesdaySchedule);
-        
-        caregiverRepository.deleteAll();
-    }
-
-    @Test
-    void testSaveShouldPersistCaregiverWithWorkingSchedules() {
-        Caregiver savedCaregiver = caregiverRepository.save(testCaregiver);
-        entityManager.flush();
-        entityManager.clear();
-        
-        Optional<Caregiver> retrievedCaregiver = caregiverRepository.findById(savedCaregiver.getId());
-        
-        assertTrue(retrievedCaregiver.isPresent());
-        assertEquals(TEST_EMAIL, retrievedCaregiver.get().getEmail());
-        assertEquals(TEST_SPECIALITY, retrievedCaregiver.get().getSpeciality());
-        assertEquals(TEST_WORK_ADDRESS, retrievedCaregiver.get().getWorkAddress());
-        assertEquals(2, retrievedCaregiver.get().getWorkingSchedules().size());
-        
-        List<WorkingSchedule> schedules = retrievedCaregiver.get().getWorkingSchedules();
-        assertTrue(schedules.stream().anyMatch(s -> s.getDayOfWeek() == DayOfWeek.MONDAY));
-        assertTrue(schedules.stream().anyMatch(s -> s.getDayOfWeek() == DayOfWeek.WEDNESDAY));
+        return caregiver;
     }
     
-    @Test
-    void testFindByIdWhenCaregiverExistsShouldReturnCaregiver() {
+    private Caregiver persistTestCaregiver() {
         Caregiver persistedCaregiver = entityManager.persist(testCaregiver);
         entityManager.flush();
-        
-        Optional<Caregiver> found = caregiverRepository.findById(persistedCaregiver.getId());
-        
-        assertTrue(found.isPresent());
-        assertEquals(TEST_EMAIL, found.get().getEmail());
-        assertEquals(TEST_SPECIALITY, found.get().getSpeciality());
+        return persistedCaregiver;
     }
     
-    @Test
-    void testFindByIdWhenCaregiverDoesNotExistShouldReturnEmpty() {
-        Optional<Caregiver> found = caregiverRepository.findById("non-existent-id");
-        
-        assertFalse(found.isPresent());
-    }
-    
-    @Test
-    void testFindAllWhenMultipleCaregiversExistShouldReturnAllCaregivers() {
-        entityManager.persist(testCaregiver);
-        
+    private void persistAnotherCaregiver() {
         Caregiver anotherCaregiver = Caregiver.builder()
                 .email("another.doctor@example.com")
                 .password("anotherPass456")
@@ -115,82 +207,14 @@ class CaregiverRepositoryTest {
                 .role(Role.CAREGIVER)
                 .build();
         
-        WorkingSchedule tuesdaySchedule = WorkingSchedule.builder()
-                .dayOfWeek(DayOfWeek.TUESDAY)
-                .build();
-        
-        anotherCaregiver.addWorkingSchedule(tuesdaySchedule);
+        anotherCaregiver.addWorkingSchedule(createWorkingSchedule(DayOfWeek.TUESDAY));
         
         entityManager.persist(anotherCaregiver);
         entityManager.flush();
-        
-        List<Caregiver> caregivers = caregiverRepository.findAll();
-        
-        assertEquals(2, caregivers.size());
     }
     
-    @Test
-    void testDeleteShouldRemoveCaregiverAndWorkingSchedules() {
-        Caregiver persistedCaregiver = entityManager.persist(testCaregiver);
-        entityManager.flush();
-        
-        String scheduleId = persistedCaregiver.getWorkingSchedules().get(0).getId();
-        
-        caregiverRepository.delete(persistedCaregiver);
-        entityManager.flush();
-        
-        Optional<Caregiver> foundCaregiver = caregiverRepository.findById(persistedCaregiver.getId());
-        assertFalse(foundCaregiver.isPresent());
-        
-        List<?> scheduleResults = entityManager.getEntityManager()
-                .createQuery("SELECT w FROM WorkingSchedule w WHERE w.id = :id")
-                .setParameter("id", scheduleId)
-                .getResultList();
-        
-        assertTrue(scheduleResults.isEmpty());
-    }
-    
-    @Test
-    void testWorkingScheduleManagementShouldAddAndRemoveSchedules() {
-        Caregiver savedCaregiver = caregiverRepository.save(testCaregiver);
-        entityManager.flush();
-        
-        WorkingSchedule fridaySchedule = WorkingSchedule.builder()
-                .dayOfWeek(DayOfWeek.FRIDAY)
-                .build();
-        
-        savedCaregiver.addWorkingSchedule(fridaySchedule);
-        caregiverRepository.save(savedCaregiver);
-        entityManager.flush();
-        entityManager.clear();
-        
-        Optional<Caregiver> afterAddition = caregiverRepository.findById(savedCaregiver.getId());
-        assertTrue(afterAddition.isPresent());
-        assertEquals(3, afterAddition.get().getWorkingSchedules().size());
-        assertTrue(afterAddition.get().getWorkingSchedules().stream()
-                .anyMatch(s -> s.getDayOfWeek() == DayOfWeek.FRIDAY));
-        
-        Caregiver caregiverToModify = afterAddition.get();
-        WorkingSchedule scheduleToRemove = caregiverToModify.getWorkingSchedules().stream()
-                .filter(s -> s.getDayOfWeek() == DayOfWeek.MONDAY)
-                .findFirst()
-                .orElseThrow();
-        
-        caregiverToModify.removeWorkingSchedule(scheduleToRemove);
-        caregiverRepository.save(caregiverToModify);
-        entityManager.flush();
-        entityManager.clear();
-        
-        Optional<Caregiver> afterRemoval = caregiverRepository.findById(savedCaregiver.getId());
-        assertTrue(afterRemoval.isPresent());
-        assertEquals(2, afterRemoval.get().getWorkingSchedules().size());
-        assertFalse(afterRemoval.get().getWorkingSchedules().stream()
-                .anyMatch(s -> s.getDayOfWeek() == DayOfWeek.MONDAY));
-    }
-    
-    @Test
-    void testRoleSettingShouldDefaultToCaregiverRole() {
-        Caregiver caregiverWithoutRole = Caregiver.builder()
+    private Caregiver createCaregiverWithoutRole() {
+        return Caregiver.builder()
                 .email("noRole@example.com")
                 .password("password123")
                 .name("No Role Caregiver")
@@ -200,14 +224,11 @@ class CaregiverRepositoryTest {
                 .phoneNumber("0866778899")
                 .speciality("General Practitioner")
                 .build();
-        
-        Caregiver savedCaregiver = caregiverRepository.save(caregiverWithoutRole);
-        entityManager.flush();
-        entityManager.clear();
-        
-        Optional<Caregiver> retrievedCaregiver = caregiverRepository.findById(savedCaregiver.getId());
-        
-        assertTrue(retrievedCaregiver.isPresent());
-        assertEquals(Role.CAREGIVER, retrievedCaregiver.get().getRole());
+    }
+    
+    private WorkingSchedule createWorkingSchedule(DayOfWeek dayOfWeek) {
+        return WorkingSchedule.builder()
+                .dayOfWeek(dayOfWeek)
+                .build();
     }
 }
