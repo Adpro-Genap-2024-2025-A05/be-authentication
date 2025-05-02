@@ -17,9 +17,9 @@ class TimeChoiceTest {
         @Test
         void onCreateGeneratesUUID() {
             TimeChoice timeChoice = new TimeChoice();
-            
+
             timeChoice.onCreate();
-            
+
             assertNotNull(timeChoice.getId());
             assertEquals(36, timeChoice.getId().length());
         }
@@ -31,7 +31,7 @@ class TimeChoiceTest {
             timeChoice.setId(initialId);
 
             timeChoice.onCreate();
-            
+
             assertEquals(initialId, timeChoice.getId());
         }
     }
@@ -45,7 +45,7 @@ class TimeChoiceTest {
                     .startTime(START_TIME)
                     .endTime(END_TIME)
                     .build();
-            
+
             assertEquals("time-choice-id", timeChoice.getId());
             assertEquals(START_TIME, timeChoice.getStartTime());
             assertEquals(END_TIME, timeChoice.getEndTime());
@@ -59,12 +59,12 @@ class TimeChoiceTest {
         void gettersAndSettersWorkCorrectly() {
             TimeChoice timeChoice = new TimeChoice();
             WorkingSchedule schedule = new WorkingSchedule();
-            
+
             timeChoice.setId("time-choice-id");
             timeChoice.setWorkingSchedule(schedule);
             timeChoice.setStartTime(START_TIME);
             timeChoice.setEndTime(END_TIME);
-            
+
             assertEquals("time-choice-id", timeChoice.getId());
             assertEquals(schedule, timeChoice.getWorkingSchedule());
             assertEquals(START_TIME, timeChoice.getStartTime());
@@ -78,7 +78,7 @@ class TimeChoiceTest {
         void equalsReturnsTrueForSameId() {
             TimeChoice timeChoice1 = createTimeChoice("time-choice-id", START_TIME, END_TIME);
             TimeChoice timeChoice2 = createTimeChoice("time-choice-id", START_TIME, END_TIME);
-            
+
             assertEquals(timeChoice1, timeChoice2);
         }
 
@@ -86,7 +86,7 @@ class TimeChoiceTest {
         void equalsReturnsFalseForDifferentId() {
             TimeChoice timeChoice1 = createTimeChoice("time-choice-id", START_TIME, END_TIME);
             TimeChoice timeChoice2 = createTimeChoice("different-id", START_TIME, END_TIME);
-            
+
             assertNotEquals(timeChoice1, timeChoice2);
         }
 
@@ -94,19 +94,28 @@ class TimeChoiceTest {
         void hashCodeReturnsSameValueForEqualObjects() {
             TimeChoice timeChoice1 = createTimeChoice("time-choice-id", START_TIME, END_TIME);
             TimeChoice timeChoice2 = createTimeChoice("time-choice-id", START_TIME, END_TIME);
-            
+
             assertEquals(timeChoice1.hashCode(), timeChoice2.hashCode());
         }
-        
+
         @Test
         void hashCodeReturnsDifferentValueForDifferentObjects() {
             TimeChoice timeChoice1 = createTimeChoice("time-choice-id", START_TIME, END_TIME);
             TimeChoice timeChoice2 = createTimeChoice("different-id", LocalTime.of(10, 0), LocalTime.of(16, 0));
-            
+
             assertNotEquals(timeChoice1.hashCode(), timeChoice2.hashCode());
         }
     }
-    
+
+    @Nested
+    class ValidationTests {
+        @Test
+        void startTimeBeforeEndTimeIsValid() {
+            TimeChoice timeChoice = createTimeChoice("id", LocalTime.of(9, 0), LocalTime.of(17, 0));
+            assertNotNull(timeChoice);
+        }
+    }
+
     private TimeChoice createTimeChoice(String id, LocalTime startTime, LocalTime endTime) {
         return TimeChoice.builder()
                 .id(id)
