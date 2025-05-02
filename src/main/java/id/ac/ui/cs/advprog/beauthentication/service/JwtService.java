@@ -36,33 +36,11 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        
-        if (userDetails instanceof User) {
-            User user = (User) userDetails;
-            claims.put("id", user.getId());
-            claims.put("role", user.getRole().getValue());
-        }
-        
-        return generateToken(claims, userDetails);
+        return generateToken(createUserClaims(userDetails), userDetails);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return buildToken(extraClaims, userDetails, jwtExpirationTime);
-    }
-
-    private String buildToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails,
-            long expiration) {
-        return Jwts
-                .builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                .compact();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
@@ -78,13 +56,50 @@ public class JwtService {
         return jwtExpirationTime;
     }
 
+    public long getRemainingTime(String token) {
+        try {
+            Date expiration = extractExpiration(token);
+            long remainingTime = expiration.getTime() - System.currentTimeMillis();
+            return Math.max(0, remainingTime);
+        } catch (ExpiredJwtException e) {
+            return 0;
+        }
+    }
+
+    private Map<String, Object> createUserClaims(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        
+        if (userDetails instanceof User) {
+            User user = (User) userDetails;
+            claims.put("id", user.getId());
+            claims.put("role", user.getRole().getValue());
+        }
+        
+        return claims;
+    }
+
+    private String buildToken(
+            Map<String, Object> extraClaims,
+            UserDetails userDetails,
+            long expiration) {
+        Date now = new Date(System.currentTimeMillis());
+        Date expiryDate = new Date(now.getTime() + expiration);
+        
+        return Jwts.builder()
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
     private Claims extractAllClaims(String token) throws ExpiredJwtException {
-        return Jwts
-                .parserBuilder()
+        return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
                 .parseClaimsJws(token)
@@ -94,14 +109,5 @@ public class JwtService {
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    public long getRemainingTime(String token) {
-        try {
-            Date expiration = extractExpiration(token);
-            return expiration.getTime() - System.currentTimeMillis();
-        } catch (ExpiredJwtException e) {
-            return 0;
-        }
     }
 }
