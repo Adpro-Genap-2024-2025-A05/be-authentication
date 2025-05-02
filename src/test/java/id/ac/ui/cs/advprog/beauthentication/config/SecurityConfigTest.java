@@ -29,23 +29,14 @@ class SecurityConfigTest {
 
     @MockBean
     private AuthenticationProvider authenticationProvider;
-
+    
     @Test
     void publicEndpointsAreAccessibleWithoutAuthentication() throws Exception {
-        mockMvc.perform(get("/api/v1/auth/"))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/api/v1/auth/register/pacilian"))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/api/v1/auth/login"))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/api/v1/auth/verify"))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/error"))
-                .andExpect(status().isOk());
+        performGetRequestAndExpectOkStatus("/api/v1/auth/");
+        performGetRequestAndExpectOkStatus("/api/v1/auth/register/pacilian");
+        performGetRequestAndExpectOkStatus("/api/v1/auth/login");
+        performGetRequestAndExpectOkStatus("/api/v1/auth/verify");
+        performGetRequestAndExpectOkStatus("/error");
     }
 
     @Test
@@ -77,7 +68,11 @@ class SecurityConfigTest {
 
     @Test
     void csrfIsDisabled() throws Exception {
-        mockMvc.perform(get("/api/v1/auth/login"))
+        performGetRequestAndExpectOkStatus("/api/v1/auth/login");
+    }
+    
+    private void performGetRequestAndExpectOkStatus(String endpoint) throws Exception {
+        mockMvc.perform(get(endpoint))
                 .andExpect(status().isOk());
     }
 }
