@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.beauthentication.config;
 
 import id.ac.ui.cs.advprog.beauthentication.filter.JwtAuthFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +41,16 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write("{\"message\":\"Logged out successfully\",\"status\":\"success\"}");
+                        })
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .permitAll())
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
