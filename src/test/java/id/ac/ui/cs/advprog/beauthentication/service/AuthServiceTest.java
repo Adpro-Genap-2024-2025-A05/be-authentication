@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -73,7 +74,7 @@ class AuthServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         SecurityContextHolder.setContext(securityContext);
-        
+
         when(passwordEncoder.encode(anyString())).thenReturn(TEST_ENCODED_PASSWORD);
     }
 
@@ -83,7 +84,7 @@ class AuthServiceTest {
         void validDataReturnsSuccessResponse() {
             RegisterPacilianDto registerDto = createPacilianDto();
             Pacilian savedPacilian = createSavedPacilian("patient-id");
-            
+
             mockRepositoryValidations(false, false);
             when(pacilianRepository.save(any(Pacilian.class))).thenReturn(savedPacilian);
 
@@ -99,7 +100,7 @@ class AuthServiceTest {
         void emailExistsThrowsIllegalArgumentException() {
             RegisterPacilianDto registerDto = createPacilianDto();
             registerDto.setEmail("existing@example.com");
-            
+
             mockRepositoryValidations(true, false);
 
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
@@ -115,7 +116,7 @@ class AuthServiceTest {
         void nikExistsThrowsIllegalArgumentException() {
             RegisterPacilianDto registerDto = createPacilianDto();
             registerDto.setNik("existing_nik");
-            
+
             mockRepositoryValidations(false, true);
 
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
@@ -134,7 +135,7 @@ class AuthServiceTest {
         void validDataReturnsSuccessResponse() {
             RegisterCaregiverDto registerDto = createCaregiverDto();
             Caregiver savedCaregiver = createSavedCaregiver("caregiver-id");
-            
+
             mockRepositoryValidations(false, false);
             when(caregiverRepository.save(any(Caregiver.class))).thenReturn(savedCaregiver);
 
@@ -150,7 +151,7 @@ class AuthServiceTest {
         void emailExistsThrowsIllegalArgumentException() {
             RegisterCaregiverDto registerDto = createCaregiverDto();
             registerDto.setEmail("existing@example.com");
-            
+
             mockRepositoryValidations(true, false);
 
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
@@ -166,7 +167,7 @@ class AuthServiceTest {
         void nikExistsThrowsIllegalArgumentException() {
             RegisterCaregiverDto registerDto = createCaregiverDto();
             registerDto.setNik("existing_nik");
-            
+
             mockRepositoryValidations(false, true);
 
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
@@ -187,7 +188,7 @@ class AuthServiceTest {
             User user = createTestUser("user-id");
             String jwtToken = "jwt-token";
             long expirationTime = 3600L;
-            
+
             mockAuthentication(user);
             when(jwtService.generateToken(user)).thenReturn(jwtToken);
             when(jwtService.getExpirationTime()).thenReturn(expirationTime);
@@ -223,7 +224,7 @@ class AuthServiceTest {
             User user = createTestUser("user-id");
             user.setEmail(userEmail);
             long remainingTime = 3000L;
-            
+
             mockTokenValidation(token, userEmail, user, true, remainingTime);
 
             TokenVerificationResponseDto response = authService.verifyToken(token);
@@ -239,7 +240,7 @@ class AuthServiceTest {
             String userEmail = "user@example.com";
             User user = createTestUser("user-id");
             user.setEmail(userEmail);
-            
+
             mockTokenValidation(token, userEmail, user, false, 0L);
 
             TokenVerificationResponseDto response = authService.verifyToken(token);
@@ -253,7 +254,7 @@ class AuthServiceTest {
         void userNotFoundReturnsInvalidResponse() {
             String token = "valid-token";
             String userEmail = "nonexistent@example.com";
-            
+
             when(jwtService.extractUsername(token)).thenReturn(userEmail);
             when(userRepository.findByEmail(userEmail)).thenReturn(Optional.empty());
 
@@ -269,7 +270,7 @@ class AuthServiceTest {
         @Test
         void nullUsernameReturnsInvalidResponse() {
             String token = "invalid-token";
-            
+
             when(jwtService.extractUsername(token)).thenReturn(null);
 
             TokenVerificationResponseDto response = authService.verifyToken(token);
@@ -284,7 +285,7 @@ class AuthServiceTest {
         @Test
         void exceptionThrownReturnsInvalidResponse() {
             String token = "exception-token";
-            
+
             when(jwtService.extractUsername(token)).thenThrow(new RuntimeException("Token error"));
 
             TokenVerificationResponseDto response = authService.verifyToken(token);
@@ -310,8 +311,23 @@ class AuthServiceTest {
     }
 
     private RegisterCaregiverDto createCaregiverDto() {
+        TimeChoiceDto timeChoice1 = TimeChoiceDto.builder()
+                .startTime(LocalTime.of(9, 0))
+                .endTime(LocalTime.of(12, 0))
+                .build();
+
+        TimeChoiceDto timeChoice2 = TimeChoiceDto.builder()
+                .startTime(LocalTime.of(13, 0))
+                .endTime(LocalTime.of(17, 0))
+                .build();
+
+        List<TimeChoiceDto> timeChoices = new ArrayList<>();
+        timeChoices.add(timeChoice1);
+        timeChoices.add(timeChoice2);
+
         WorkingScheduleDto scheduleDto = WorkingScheduleDto.builder()
                 .dayOfWeek(DayOfWeek.MONDAY)
+                .timeChoices(timeChoices)
                 .build();
 
         List<WorkingScheduleDto> scheduleDtos = new ArrayList<>();
@@ -389,7 +405,7 @@ class AuthServiceTest {
         when(jwtService.extractUsername(token)).thenReturn(userEmail);
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(user));
         when(jwtService.isTokenValid(token, user)).thenReturn(isValid);
-        
+
         if (isValid) {
             when(jwtService.getRemainingTime(token)).thenReturn(remainingTime);
         }
@@ -401,8 +417,7 @@ class AuthServiceTest {
     }
 
     private void verifyAuthentication(LoginDto loginDto) {
-        verify(authenticationManager).authenticate(argThat(auth -> 
-                auth.getPrincipal().equals(loginDto.getEmail()) &&
+        verify(authenticationManager).authenticate(argThat(auth -> auth.getPrincipal().equals(loginDto.getEmail()) &&
                 auth.getCredentials().equals(loginDto.getPassword())));
         verify(authentication).getPrincipal();
     }

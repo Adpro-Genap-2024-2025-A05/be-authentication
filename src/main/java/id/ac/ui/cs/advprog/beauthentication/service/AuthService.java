@@ -118,6 +118,15 @@ public class AuthService {
             WorkingSchedule schedule = WorkingSchedule.builder()
                     .dayOfWeek(scheduleDto.getDayOfWeek())
                     .build();
+            
+            scheduleDto.getTimeChoices().forEach(timeChoiceDto -> {
+                TimeChoice timeChoice = TimeChoice.builder()
+                        .startTime(timeChoiceDto.getStartTime())
+                        .endTime(timeChoiceDto.getEndTime())
+                        .build();
+                schedule.addTimeChoice(timeChoice);
+            });
+            
             caregiver.addWorkingSchedule(schedule);
         });
     }

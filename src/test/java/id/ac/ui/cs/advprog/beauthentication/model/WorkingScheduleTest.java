@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,6 +47,8 @@ class WorkingScheduleTest {
             assertEquals("schedule-id", schedule.getId());
             assertEquals(DayOfWeek.MONDAY, schedule.getDayOfWeek());
             assertNull(schedule.getCaregiver());
+            assertNotNull(schedule.getTimeChoices());
+            assertTrue(schedule.getTimeChoices().isEmpty());
         }
     }
 
@@ -62,6 +66,66 @@ class WorkingScheduleTest {
             assertEquals("schedule-id", schedule.getId());
             assertEquals(caregiver, schedule.getCaregiver());
             assertEquals(DayOfWeek.MONDAY, schedule.getDayOfWeek());
+        }
+    }
+
+    @Nested
+    class TimeChoiceRelationshipTests {
+        @Test
+        void addTimeChoiceAddsToCollection() {
+            WorkingSchedule schedule = new WorkingSchedule();
+            TimeChoice timeChoice = new TimeChoice();
+            
+            schedule.addTimeChoice(timeChoice);
+            
+            assertTrue(schedule.getTimeChoices().contains(timeChoice));
+            assertEquals(schedule, timeChoice.getWorkingSchedule());
+        }
+        
+        @Test
+        void addNullTimeChoiceDoesNothing() {
+            WorkingSchedule schedule = new WorkingSchedule();
+            int initialSize = schedule.getTimeChoices().size();
+            schedule.addTimeChoice(null);
+            assertEquals(initialSize, schedule.getTimeChoices().size());
+        }
+        
+        @Test
+        void removeTimeChoiceRemovesFromCollection() {
+            WorkingSchedule schedule = new WorkingSchedule();
+            TimeChoice timeChoice = new TimeChoice();
+            schedule.addTimeChoice(timeChoice);
+            
+            schedule.removeTimeChoice(timeChoice);
+            
+            assertFalse(schedule.getTimeChoices().contains(timeChoice));
+            assertNull(timeChoice.getWorkingSchedule());
+        }
+        
+        @Test
+        void removeNullTimeChoiceDoesNothing() {
+            WorkingSchedule schedule = new WorkingSchedule();
+            TimeChoice timeChoice = new TimeChoice();
+            schedule.addTimeChoice(timeChoice);
+            int initialSize = schedule.getTimeChoices().size();
+            
+            schedule.removeTimeChoice(null);
+            
+            assertEquals(initialSize, schedule.getTimeChoices().size());
+        }
+        
+        @Test
+        void removeNonExistentTimeChoiceDoesNothing() {
+            WorkingSchedule schedule = new WorkingSchedule();
+            TimeChoice timeChoice1 = new TimeChoice();
+            TimeChoice timeChoice2 = new TimeChoice();
+            schedule.addTimeChoice(timeChoice1);
+            int initialSize = schedule.getTimeChoices().size();
+            
+            schedule.removeTimeChoice(timeChoice2);
+            
+            assertEquals(initialSize, schedule.getTimeChoices().size());
+            assertTrue(schedule.getTimeChoices().contains(timeChoice1));
         }
     }
 
