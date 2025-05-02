@@ -19,7 +19,7 @@ class TimeChoiceDtoTest {
         @Test
         void builderCreatesTimeChoiceDto() {
             TimeChoiceDto dto = createDto(START_TIME, END_TIME);
-            
+
             assertEquals(START_TIME, dto.getStartTime());
             assertEquals(END_TIME, dto.getEndTime());
         }
@@ -27,7 +27,7 @@ class TimeChoiceDtoTest {
         @Test
         void noArgsConstructorCreatesEmptyTimeChoiceDto() {
             TimeChoiceDto dto = new TimeChoiceDto();
-            
+
             assertNull(dto.getStartTime());
             assertNull(dto.getEndTime());
         }
@@ -35,7 +35,7 @@ class TimeChoiceDtoTest {
         @Test
         void allArgsConstructorCreatesTimeChoiceDto() {
             TimeChoiceDto dto = new TimeChoiceDto(START_TIME, END_TIME);
-            
+
             assertEquals(START_TIME, dto.getStartTime());
             assertEquals(END_TIME, dto.getEndTime());
         }
@@ -46,10 +46,10 @@ class TimeChoiceDtoTest {
         @Test
         void gettersAndSettersWorkCorrectly() {
             TimeChoiceDto dto = new TimeChoiceDto();
-            
+
             dto.setStartTime(START_TIME);
             dto.setEndTime(END_TIME);
-            
+
             assertEquals(START_TIME, dto.getStartTime());
             assertEquals(END_TIME, dto.getEndTime());
         }
@@ -61,30 +61,54 @@ class TimeChoiceDtoTest {
         void equalsReturnsTrueForEquivalentObjects() {
             TimeChoiceDto dto1 = createDto(START_TIME, END_TIME);
             TimeChoiceDto dto2 = createDto(START_TIME, END_TIME);
-            
+
             assertEquals(dto1, dto2);
             assertEquals(dto1.hashCode(), dto2.hashCode());
         }
-        
+
         @Test
         void equalsReturnsFalseForDifferentStartTime() {
             TimeChoiceDto dto1 = createDto(START_TIME, END_TIME);
             TimeChoiceDto dto2 = createDto(DIFFERENT_START_TIME, END_TIME);
-            
+
             assertNotEquals(dto1, dto2);
             assertNotEquals(dto1.hashCode(), dto2.hashCode());
         }
-        
+
         @Test
         void equalsReturnsFalseForDifferentEndTime() {
             TimeChoiceDto dto1 = createDto(START_TIME, END_TIME);
             TimeChoiceDto dto2 = createDto(START_TIME, DIFFERENT_END_TIME);
-            
+
             assertNotEquals(dto1, dto2);
             assertNotEquals(dto1.hashCode(), dto2.hashCode());
         }
     }
-    
+
+    @Nested
+    class BoundaryValueTests {
+        @Test
+        void handlesMinMaxTimeBounds() {
+            LocalTime minTime = LocalTime.MIN;
+            LocalTime maxTime = LocalTime.MAX;
+
+            TimeChoiceDto dto = createDto(minTime, maxTime);
+
+            assertEquals(minTime, dto.getStartTime());
+            assertEquals(maxTime, dto.getEndTime());
+        }
+
+        @Test
+        void handlesSameStartAndEndTime() {
+            LocalTime sameTime = LocalTime.NOON;
+
+            TimeChoiceDto dto = createDto(sameTime, sameTime);
+
+            assertEquals(sameTime, dto.getStartTime());
+            assertEquals(sameTime, dto.getEndTime());
+        }
+    }
+
     private TimeChoiceDto createDto(LocalTime startTime, LocalTime endTime) {
         return TimeChoiceDto.builder()
                 .startTime(startTime)
