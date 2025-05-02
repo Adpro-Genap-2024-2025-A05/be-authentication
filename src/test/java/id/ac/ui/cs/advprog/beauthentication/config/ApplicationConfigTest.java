@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.beauthentication.config;
 import id.ac.ui.cs.advprog.beauthentication.model.User;
 import id.ac.ui.cs.advprog.beauthentication.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -36,50 +37,63 @@ class ApplicationConfigTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    void userDetailsService_UserFound_ReturnsUser() {
-        User mockUser = mock(User.class);
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
-        UserDetailsService userDetailsService = applicationConfig.userDetailsService();
+    @Nested
+    class UserDetailsServiceTests {
+        @Test
+        void userFound_ReturnsUser() {
+            User mockUser = mock(User.class);
+            when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
+            
+            UserDetailsService userDetailsService = applicationConfig.userDetailsService();
+            Object result = userDetailsService.loadUserByUsername("test@example.com");
+            
+            assertNotNull(userDetailsService);
+            assertEquals(mockUser, result);
+            verify(userRepository).findByEmail("test@example.com");
+        }
 
-        assertNotNull(userDetailsService);
-        assertEquals(mockUser, userDetailsService.loadUserByUsername("test@example.com"));
-        verify(userRepository).findByEmail("test@example.com");
+        @Test
+        void userNotFound_ThrowsException() {
+            when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+            
+            UserDetailsService userDetailsService = applicationConfig.userDetailsService();
+            
+            assertThrows(UsernameNotFoundException.class,
+                    () -> userDetailsService.loadUserByUsername("nonexistent@example.com"));
+            verify(userRepository).findByEmail("nonexistent@example.com");
+        }
     }
 
-    @Test
-    void userDetailsService_UserNotFound_ThrowsException() {
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-        UserDetailsService userDetailsService = applicationConfig.userDetailsService();
+    @Nested
+    class AuthenticationTests {
+        @Test
+        void authenticationProvider_ReturnsProvider() {
+            DaoAuthenticationProvider authProvider = (DaoAuthenticationProvider) applicationConfig.authenticationProvider();
+            
+            assertNotNull(authProvider);
+        }
 
-        assertThrows(UsernameNotFoundException.class,
-                () -> userDetailsService.loadUserByUsername("nonexistent@example.com"));
-        verify(userRepository).findByEmail("nonexistent@example.com");
+        @Test
+        void authenticationManager_ReturnsManager() throws Exception {
+            AuthenticationManager mockAuthManager = mock(AuthenticationManager.class);
+            when(authenticationConfiguration.getAuthenticationManager()).thenReturn(mockAuthManager);
+            
+            AuthenticationManager result = applicationConfig.authenticationManager(authenticationConfiguration);
+            
+            assertNotNull(result);
+            assertEquals(mockAuthManager, result);
+            verify(authenticationConfiguration).getAuthenticationManager();
+        }
     }
 
-    @Test
-    void authenticationProvider_ReturnsProvider() {
-        DaoAuthenticationProvider authProvider = (DaoAuthenticationProvider) applicationConfig.authenticationProvider();
-        assertNotNull(authProvider);
-    }
-
-    @Test
-    void authenticationManager_ReturnsManager() throws Exception {
-        AuthenticationManager mockAuthManager = mock(AuthenticationManager.class);
-        when(authenticationConfiguration.getAuthenticationManager()).thenReturn(mockAuthManager);
-
-        AuthenticationManager result = applicationConfig.authenticationManager(authenticationConfiguration);
-
-        assertNotNull(result);
-        assertEquals(mockAuthManager, result);
-        verify(authenticationConfiguration).getAuthenticationManager();
-    }
-
-    @Test
-    void passwordEncoder_ReturnsBCryptEncoder() {
-        var encoder = applicationConfig.passwordEncoder();
-
-        assertNotNull(encoder);
-        assertTrue(encoder instanceof BCryptPasswordEncoder);
+    @Nested
+    class PasswordEncoderTests {
+        @Test
+        void returnsCorrectBCryptEncoder() {
+            var encoder = applicationConfig.passwordEncoder();
+            
+            assertNotNull(encoder);
+            assertTrue(encoder instanceof BCryptPasswordEncoder);
+        }
     }
 }
