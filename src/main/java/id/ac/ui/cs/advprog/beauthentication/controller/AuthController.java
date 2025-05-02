@@ -1,11 +1,6 @@
 package id.ac.ui.cs.advprog.beauthentication.controller;
 
-import id.ac.ui.cs.advprog.beauthentication.dto.LoginDto;
-import id.ac.ui.cs.advprog.beauthentication.dto.LoginResponseDto;
-import id.ac.ui.cs.advprog.beauthentication.dto.RegisterCaregiverDto;
-import id.ac.ui.cs.advprog.beauthentication.dto.RegisterPacilianDto;
-import id.ac.ui.cs.advprog.beauthentication.dto.RegisterResponseDto;
-import id.ac.ui.cs.advprog.beauthentication.dto.TokenVerificationResponseDto;
+import id.ac.ui.cs.advprog.beauthentication.dto.*;
 import id.ac.ui.cs.advprog.beauthentication.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -19,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class AuthController {

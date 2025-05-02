@@ -32,16 +32,16 @@ class SecurityConfigTest {
     
     @Test
     void publicEndpointsAreAccessibleWithoutAuthentication() throws Exception {
-        performGetRequestAndExpectOkStatus("/api/v1/auth/");
-        performGetRequestAndExpectOkStatus("/api/v1/auth/register/pacilian");
-        performGetRequestAndExpectOkStatus("/api/v1/auth/login");
-        performGetRequestAndExpectOkStatus("/api/v1/auth/verify");
+        performGetRequestAndExpectOkStatus("/");
+        performGetRequestAndExpectOkStatus("/register/pacilian");
+        performGetRequestAndExpectOkStatus("/login");
+        performGetRequestAndExpectOkStatus("/verify");
         performGetRequestAndExpectOkStatus("/error");
     }
 
     @Test
     void corsIsConfiguredCorrectly() throws Exception {
-        mockMvc.perform(options("/api/v1/auth/login")
+        mockMvc.perform(options("/login")
                         .header("Origin", "http://example.com")
                         .header("Access-Control-Request-Method", "POST")
                         .header("Access-Control-Request-Headers", "Authorization, Content-Type"))
@@ -60,7 +60,7 @@ class SecurityConfigTest {
 
     @Test
     void sessionManagementIsStateless() throws Exception {
-        mockMvc.perform(get("/api/v1/auth/")
+        mockMvc.perform(get("/")
                         .with(SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().isOk())
                 .andExpect(header().doesNotExist("Set-Cookie"));
@@ -68,7 +68,7 @@ class SecurityConfigTest {
 
     @Test
     void csrfIsDisabled() throws Exception {
-        performGetRequestAndExpectOkStatus("/api/v1/auth/login");
+        performGetRequestAndExpectOkStatus("/login");
     }
     
     private void performGetRequestAndExpectOkStatus(String endpoint) throws Exception {
