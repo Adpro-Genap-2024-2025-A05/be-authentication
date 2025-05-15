@@ -52,7 +52,7 @@ class AuthServiceTest {
     private Authentication authentication;
 
     @InjectMocks
-    private AuthService authService;
+    private AuthServiceImpl authService;
 
     private static final String TEST_EMAIL = "patient@example.com";
     private static final String TEST_PASSWORD = "password";
