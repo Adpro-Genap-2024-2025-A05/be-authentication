@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.beauthentication.controller;
 
+import id.ac.ui.cs.advprog.beauthentication.dto.ApiResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -22,19 +23,28 @@ class HomeControllerTest {
 
     @Test
     void healthCheck_shouldReturnUpStatus() {
-        ResponseEntity<Map<String, String>> response = homeController.healthCheck();
+        ResponseEntity<ApiResponseDto<Map<String, String>>> response = homeController.healthCheck();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("UP", response.getBody().get("status"));
-        assertEquals("Back-End Authentication & Profile API", response.getBody().get("service"));
+        ApiResponseDto<Map<String, String>> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(HttpStatus.OK.value(), body.getStatus());
+        assertEquals("Service is up and running", body.getMessage());
+        assertNotNull(body.getTimestamp());
+        
+        Map<String, String> data = body.getData();
+        assertNotNull(data);
+        assertEquals("UP", data.get("status"));
+        assertEquals("Back-End Authentication & Profile API", data.get("service"));
     }
     
     @Test
     void healthCheck_shouldNotReturnNullResponse() {
-        ResponseEntity<Map<String, String>> response = homeController.healthCheck();
+        ResponseEntity<ApiResponseDto<Map<String, String>>> response = homeController.healthCheck();
 
         assertNotNull(response);
         assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getTimestamp());
+        assertNotNull(response.getBody().getData());
     }
 }

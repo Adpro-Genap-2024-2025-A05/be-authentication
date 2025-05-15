@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.beauthentication.controller;
 
+import id.ac.ui.cs.advprog.beauthentication.dto.ApiResponseDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +17,14 @@ import java.util.Map;
 public class HomeController {
 
     @GetMapping
-    public ResponseEntity<Map<String, String>> healthCheck() {
+    public ResponseEntity<ApiResponseDto<Map<String, String>>> healthCheck() {
         Map<String, String> status = new HashMap<>();
         status.put("status", "UP");
         status.put("service", "Back-End Authentication & Profile API");
-        return ResponseEntity.ok(status);
+        
+        return ResponseEntity.ok(
+                ApiResponseDto.success(HttpStatus.OK.value(),
+                                "Service is up and running",
+                                status));
     }
 }
