@@ -18,7 +18,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class JwtServiceTest {
+class JwtServiceImplTest {
 
     @InjectMocks
     private JwtServiceImpl jwtService;
