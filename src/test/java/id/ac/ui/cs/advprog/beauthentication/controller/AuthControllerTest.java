@@ -35,16 +35,6 @@ class AuthControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    void healthCheckReturnsOkStatus() {
-        ResponseEntity<Map<String, String>> response = authController.healthCheck();
-        
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("UP", response.getBody().get("status"));
-        assertEquals("Authentication API", response.getBody().get("service"));
-    }
-
     @Nested
     class RegistrationTests {
         @Test

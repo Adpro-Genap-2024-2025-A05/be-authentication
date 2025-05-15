@@ -14,20 +14,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthService authService;
-
-    @GetMapping("/")
-    public ResponseEntity<Map<String, String>> healthCheck() {
-        Map<String, String> status = new HashMap<>();
-        status.put("status", "UP");
-        status.put("service", "Authentication API");
-        return ResponseEntity.ok(status);
-    }
 
     @PostMapping(path = "/register/pacilian", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RegisterResponseDto> registerPacilian(@Valid @RequestBody RegisterPacilianDto registerDto) {
