@@ -13,7 +13,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,7 +94,6 @@ class AuthControllerTest {
                     .workAddress("Work Address")
                     .phoneNumber("1234567890")
                     .speciality("Cardiology")
-                    .workingSchedules(new ArrayList<>())
                     .build();
         }
 

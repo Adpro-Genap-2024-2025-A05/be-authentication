@@ -44,7 +44,6 @@ public class AuthService {
         validateRegistration(registerDto.getEmail(), registerDto.getNik());
 
         Caregiver caregiver = createCaregiverEntity(registerDto);
-        addWorkingSchedulesToCaregiver(caregiver, registerDto);
         
         Caregiver savedCaregiver = caregiverRepository.save(caregiver);
 
@@ -111,24 +110,6 @@ public class AuthService {
                 .speciality(registerDto.getSpeciality())
                 .role(Role.CAREGIVER)
                 .build();
-    }
-    
-    private void addWorkingSchedulesToCaregiver(Caregiver caregiver, RegisterCaregiverDto registerDto) {
-        registerDto.getWorkingSchedules().forEach(scheduleDto -> {
-            WorkingSchedule schedule = WorkingSchedule.builder()
-                    .dayOfWeek(scheduleDto.getDayOfWeek())
-                    .build();
-            
-            scheduleDto.getTimeChoices().forEach(timeChoiceDto -> {
-                TimeChoice timeChoice = TimeChoice.builder()
-                        .startTime(timeChoiceDto.getStartTime())
-                        .endTime(timeChoiceDto.getEndTime())
-                        .build();
-                schedule.addTimeChoice(timeChoice);
-            });
-            
-            caregiver.addWorkingSchedule(schedule);
-        });
     }
     
     private RegisterResponseDto buildRegisterResponse(String id, Role role) {

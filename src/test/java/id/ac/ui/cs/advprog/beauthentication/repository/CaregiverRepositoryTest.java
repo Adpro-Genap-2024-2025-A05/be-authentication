@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.beauthentication.repository;
 
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
 import id.ac.ui.cs.advprog.beauthentication.model.Caregiver;
-import id.ac.ui.cs.advprog.beauthentication.model.WorkingSchedule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
-import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +41,7 @@ class CaregiverRepositoryTest {
     @Nested
     class SaveOperationTests {
         @Test
-        void saveShouldPersistCaregiverWithWorkingSchedules() {
+        void saveShouldPersistCaregiver() {
             Caregiver savedCaregiver = caregiverRepository.save(testCaregiver);
             entityManager.flush();
             entityManager.clear();
@@ -54,11 +52,6 @@ class CaregiverRepositoryTest {
             assertEquals(TEST_EMAIL, retrievedCaregiver.get().getEmail());
             assertEquals(TEST_SPECIALITY, retrievedCaregiver.get().getSpeciality());
             assertEquals(TEST_WORK_ADDRESS, retrievedCaregiver.get().getWorkAddress());
-            assertEquals(2, retrievedCaregiver.get().getWorkingSchedules().size());
-            
-            List<WorkingSchedule> schedules = retrievedCaregiver.get().getWorkingSchedules();
-            assertTrue(schedules.stream().anyMatch(s -> s.getDayOfWeek() == DayOfWeek.MONDAY));
-            assertTrue(schedules.stream().anyMatch(s -> s.getDayOfWeek() == DayOfWeek.WEDNESDAY));
         }
         
         @Test
@@ -110,67 +103,19 @@ class CaregiverRepositoryTest {
     @Nested
     class DeleteOperationTests {
         @Test
-        void deleteShouldRemoveCaregiverAndWorkingSchedules() {
+        void deleteShouldRemoveCaregiver() {
             Caregiver persistedCaregiver = persistTestCaregiver();
-            
-            String scheduleId = persistedCaregiver.getWorkingSchedules().get(0).getId();
             
             caregiverRepository.delete(persistedCaregiver);
             entityManager.flush();
             
             Optional<Caregiver> foundCaregiver = caregiverRepository.findById(persistedCaregiver.getId());
             assertFalse(foundCaregiver.isPresent());
-            
-            List<?> scheduleResults = entityManager.getEntityManager()
-                    .createQuery("SELECT w FROM WorkingSchedule w WHERE w.id = :id")
-                    .setParameter("id", scheduleId)
-                    .getResultList();
-            
-            assertTrue(scheduleResults.isEmpty());
-        }
-    }
-    
-    @Nested
-    class WorkingScheduleManagementTests {
-        @Test
-        void shouldAddAndRemoveSchedules() {
-            Caregiver savedCaregiver = caregiverRepository.save(testCaregiver);
-            entityManager.flush();
-            
-            WorkingSchedule fridaySchedule = createWorkingSchedule(DayOfWeek.FRIDAY);
-            
-            savedCaregiver.addWorkingSchedule(fridaySchedule);
-            caregiverRepository.save(savedCaregiver);
-            entityManager.flush();
-            entityManager.clear();
-            
-            Optional<Caregiver> afterAddition = caregiverRepository.findById(savedCaregiver.getId());
-            assertTrue(afterAddition.isPresent());
-            assertEquals(3, afterAddition.get().getWorkingSchedules().size());
-            assertTrue(afterAddition.get().getWorkingSchedules().stream()
-                    .anyMatch(s -> s.getDayOfWeek() == DayOfWeek.FRIDAY));
-            
-            Caregiver caregiverToModify = afterAddition.get();
-            WorkingSchedule scheduleToRemove = caregiverToModify.getWorkingSchedules().stream()
-                    .filter(s -> s.getDayOfWeek() == DayOfWeek.MONDAY)
-                    .findFirst()
-                    .orElseThrow();
-            
-            caregiverToModify.removeWorkingSchedule(scheduleToRemove);
-            caregiverRepository.save(caregiverToModify);
-            entityManager.flush();
-            entityManager.clear();
-            
-            Optional<Caregiver> afterRemoval = caregiverRepository.findById(savedCaregiver.getId());
-            assertTrue(afterRemoval.isPresent());
-            assertEquals(2, afterRemoval.get().getWorkingSchedules().size());
-            assertFalse(afterRemoval.get().getWorkingSchedules().stream()
-                    .anyMatch(s -> s.getDayOfWeek() == DayOfWeek.MONDAY));
         }
     }
     
     private Caregiver createTestCaregiver() {
-        Caregiver caregiver = Caregiver.builder()
+        return Caregiver.builder()
                 .email(TEST_EMAIL)
                 .password("doctorPass123")
                 .name("Dr. Test")
@@ -181,11 +126,6 @@ class CaregiverRepositoryTest {
                 .speciality(TEST_SPECIALITY)
                 .role(Role.CAREGIVER)
                 .build();
-        
-        caregiver.addWorkingSchedule(createWorkingSchedule(DayOfWeek.MONDAY));
-        caregiver.addWorkingSchedule(createWorkingSchedule(DayOfWeek.WEDNESDAY));
-        
-        return caregiver;
     }
     
     private Caregiver persistTestCaregiver() {
@@ -207,8 +147,6 @@ class CaregiverRepositoryTest {
                 .role(Role.CAREGIVER)
                 .build();
         
-        anotherCaregiver.addWorkingSchedule(createWorkingSchedule(DayOfWeek.TUESDAY));
-        
         entityManager.persist(anotherCaregiver);
         entityManager.flush();
     }
@@ -223,12 +161,6 @@ class CaregiverRepositoryTest {
                 .workAddress("789 No Role St.")
                 .phoneNumber("0866778899")
                 .speciality("General Practitioner")
-                .build();
-    }
-    
-    private WorkingSchedule createWorkingSchedule(DayOfWeek dayOfWeek) {
-        return WorkingSchedule.builder()
-                .dayOfWeek(dayOfWeek)
                 .build();
     }
 }

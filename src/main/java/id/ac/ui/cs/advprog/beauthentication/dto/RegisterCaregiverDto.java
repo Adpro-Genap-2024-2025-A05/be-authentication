@@ -41,8 +41,4 @@ public class RegisterCaregiverDto {
 
     @NotBlank(message = "Speciality is required")
     private String speciality;
-
-    @NotEmpty(message = "Working schedules are required")
-    @Valid
-    private List<WorkingScheduleDto> workingSchedules;
 }

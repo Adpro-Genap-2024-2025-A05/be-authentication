@@ -3,10 +3,6 @@ package id.ac.ui.cs.advprog.beauthentication.dto;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class RegisterCaregiverDtoTest {
@@ -23,8 +19,6 @@ class RegisterCaregiverDtoTest {
     class ConstructorTests {
         @Test
         void builderCreatesRegisterCaregiverDto() {
-            List<WorkingScheduleDto> scheduleDtos = createTestSchedules();
-            
             RegisterCaregiverDto dto = RegisterCaregiverDto.builder()
                     .email(TEST_EMAIL)
                     .password(TEST_PASSWORD)
@@ -33,10 +27,9 @@ class RegisterCaregiverDtoTest {
                     .workAddress(TEST_WORK_ADDRESS)
                     .phoneNumber(TEST_PHONE)
                     .speciality(TEST_SPECIALITY)
-                    .workingSchedules(scheduleDtos)
                     .build();
             
-            assertAllFieldsMatch(dto, scheduleDtos);
+            assertAllFieldsMatch(dto);
         }
 
         @Test
@@ -50,13 +43,10 @@ class RegisterCaregiverDtoTest {
             assertNull(dto.getWorkAddress());
             assertNull(dto.getPhoneNumber());
             assertNull(dto.getSpeciality());
-            assertNull(dto.getWorkingSchedules());
         }
 
         @Test
         void allArgsConstructorCreatesRegisterCaregiverDto() {
-            List<WorkingScheduleDto> scheduleDtos = createTestSchedules();
-            
             RegisterCaregiverDto dto = new RegisterCaregiverDto(
                     TEST_EMAIL,
                     TEST_PASSWORD,
@@ -64,10 +54,9 @@ class RegisterCaregiverDtoTest {
                     TEST_NIK,
                     TEST_WORK_ADDRESS,
                     TEST_PHONE,
-                    TEST_SPECIALITY,
-                    scheduleDtos);
+                    TEST_SPECIALITY);
             
-            assertAllFieldsMatch(dto, scheduleDtos);
+            assertAllFieldsMatch(dto);
         }
     }
 
@@ -76,7 +65,6 @@ class RegisterCaregiverDtoTest {
         @Test
         void gettersAndSettersWorkCorrectly() {
             RegisterCaregiverDto dto = new RegisterCaregiverDto();
-            List<WorkingScheduleDto> scheduleDtos = createTestSchedules();
             
             dto.setEmail(TEST_EMAIL);
             dto.setPassword(TEST_PASSWORD);
@@ -85,9 +73,8 @@ class RegisterCaregiverDtoTest {
             dto.setWorkAddress(TEST_WORK_ADDRESS);
             dto.setPhoneNumber(TEST_PHONE);
             dto.setSpeciality(TEST_SPECIALITY);
-            dto.setWorkingSchedules(scheduleDtos);
             
-            assertAllFieldsMatch(dto, scheduleDtos);
+            assertAllFieldsMatch(dto);
         }
     }
 
@@ -95,11 +82,8 @@ class RegisterCaregiverDtoTest {
     class EqualsHashCodeTests {
         @Test
         void equalsReturnsTrueForEquivalentObjects() {
-            List<WorkingScheduleDto> scheduleDtos1 = createTestSchedules();
-            List<WorkingScheduleDto> scheduleDtos2 = createTestSchedules();
-            
-            RegisterCaregiverDto dto1 = createTestDto(scheduleDtos1);
-            RegisterCaregiverDto dto2 = createTestDto(scheduleDtos2);
+            RegisterCaregiverDto dto1 = createTestDto();
+            RegisterCaregiverDto dto2 = createTestDto();
             
             assertEquals(dto1, dto2);
             assertEquals(dto1.hashCode(), dto2.hashCode());
@@ -107,10 +91,7 @@ class RegisterCaregiverDtoTest {
         
         @Test
         void equalsReturnsFalseForDifferentObjects() {
-            List<WorkingScheduleDto> scheduleDtos = createTestSchedules();
-            List<WorkingScheduleDto> differentSchedules = createDifferentSchedules();
-            
-            RegisterCaregiverDto dto1 = createTestDto(scheduleDtos);
+            RegisterCaregiverDto dto1 = createTestDto();
             
             RegisterCaregiverDto dto2 = RegisterCaregiverDto.builder()
                     .email("different@example.com")
@@ -120,35 +101,14 @@ class RegisterCaregiverDtoTest {
                     .workAddress("Different Address")
                     .phoneNumber("0987654321")
                     .speciality("Neurology")
-                    .workingSchedules(differentSchedules)
                     .build();
             
             assertNotEquals(dto1, dto2);
             assertNotEquals(dto1.hashCode(), dto2.hashCode());
         }
     }
-
-    private List<WorkingScheduleDto> createTestSchedules() {
-        WorkingScheduleDto scheduleDto = WorkingScheduleDto.builder()
-                .dayOfWeek(DayOfWeek.MONDAY)
-                .build();
-        
-        List<WorkingScheduleDto> scheduleDtos = new ArrayList<>();
-        scheduleDtos.add(scheduleDto);
-        return scheduleDtos;
-    }
     
-    private List<WorkingScheduleDto> createDifferentSchedules() {
-        WorkingScheduleDto scheduleDto = WorkingScheduleDto.builder()
-                .dayOfWeek(DayOfWeek.TUESDAY)
-                .build();
-        
-        List<WorkingScheduleDto> scheduleDtos = new ArrayList<>();
-        scheduleDtos.add(scheduleDto);
-        return scheduleDtos;
-    }
-    
-    private RegisterCaregiverDto createTestDto(List<WorkingScheduleDto> scheduleDtos) {
+    private RegisterCaregiverDto createTestDto() {
         return RegisterCaregiverDto.builder()
                 .email(TEST_EMAIL)
                 .password(TEST_PASSWORD)
@@ -157,11 +117,10 @@ class RegisterCaregiverDtoTest {
                 .workAddress(TEST_WORK_ADDRESS)
                 .phoneNumber(TEST_PHONE)
                 .speciality(TEST_SPECIALITY)
-                .workingSchedules(scheduleDtos)
                 .build();
     }
     
-    private void assertAllFieldsMatch(RegisterCaregiverDto dto, List<WorkingScheduleDto> scheduleDtos) {
+    private void assertAllFieldsMatch(RegisterCaregiverDto dto) {
         assertEquals(TEST_EMAIL, dto.getEmail());
         assertEquals(TEST_PASSWORD, dto.getPassword());
         assertEquals(TEST_NAME, dto.getName());
@@ -169,6 +128,5 @@ class RegisterCaregiverDtoTest {
         assertEquals(TEST_WORK_ADDRESS, dto.getWorkAddress());
         assertEquals(TEST_PHONE, dto.getPhoneNumber());
         assertEquals(TEST_SPECIALITY, dto.getSpeciality());
-        assertEquals(scheduleDtos, dto.getWorkingSchedules());
     }
 }
