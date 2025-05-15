@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @Builder
@@ -15,26 +15,26 @@ import java.time.LocalDateTime;
 public class ApiResponseDto<T> {
     private int status;
     private String message;
-    
+
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-    private LocalDateTime timestamp;
-    
+    private ZonedDateTime timestamp;
+
     private T data;
-    
+
     public static <T> ApiResponseDto<T> success(int status, String message, T data) {
         return ApiResponseDto.<T>builder()
                 .status(status)
                 .message(message)
-                .timestamp(LocalDateTime.now())
+                .timestamp(ZonedDateTime.now())
                 .data(data)
                 .build();
     }
-    
+
     public static <T> ApiResponseDto<T> error(int status, String message) {
         return ApiResponseDto.<T>builder()
                 .status(status)
                 .message(message)
-                .timestamp(LocalDateTime.now())
+                .timestamp(ZonedDateTime.now())
                 .build();
     }
 }
