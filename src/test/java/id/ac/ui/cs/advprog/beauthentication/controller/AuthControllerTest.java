@@ -13,9 +13,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -36,16 +33,6 @@ class AuthControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    void healthCheckReturnsOkStatus() {
-        ResponseEntity<Map<String, String>> response = authController.healthCheck();
-        
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("UP", response.getBody().get("status"));
-        assertEquals("Authentication API", response.getBody().get("service"));
-    }
-
     @Nested
     class RegistrationTests {
         @Test
@@ -55,9 +42,16 @@ class AuthControllerTest {
             
             when(authService.registerPacilian(any(RegisterPacilianDto.class))).thenReturn(expectedResponse);
             
-            ResponseEntity<RegisterResponseDto> response = authController.registerPacilian(registerDto);
+            ResponseEntity<ApiResponseDto<RegisterResponseDto>> response = authController.registerPacilian(registerDto);
             
-            assertRegistrationResponse(response, expectedResponse, HttpStatus.CREATED);
+            assertEquals(HttpStatus.CREATED, response.getStatusCode());
+            ApiResponseDto<RegisterResponseDto> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(HttpStatus.CREATED.value(), body.getStatus());
+            assertEquals("Pacilian registered successfully", body.getMessage());
+            assertNotNull(body.getTimestamp());
+            assertEquals(expectedResponse, body.getData());
+            
             verify(authService).registerPacilian(registerDto);
         }
 
@@ -68,9 +62,16 @@ class AuthControllerTest {
             
             when(authService.registerCaregiver(any(RegisterCaregiverDto.class))).thenReturn(expectedResponse);
             
-            ResponseEntity<RegisterResponseDto> response = authController.registerCaregiver(registerDto);
+            ResponseEntity<ApiResponseDto<RegisterResponseDto>> response = authController.registerCaregiver(registerDto);
             
-            assertRegistrationResponse(response, expectedResponse, HttpStatus.CREATED);
+            assertEquals(HttpStatus.CREATED, response.getStatusCode());
+            ApiResponseDto<RegisterResponseDto> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(HttpStatus.CREATED.value(), body.getStatus());
+            assertEquals("Caregiver registered successfully", body.getMessage());
+            assertNotNull(body.getTimestamp());
+            assertEquals(expectedResponse, body.getData());
+            
             verify(authService).registerCaregiver(registerDto);
         }
 
@@ -95,7 +96,6 @@ class AuthControllerTest {
                     .workAddress("Work Address")
                     .phoneNumber("1234567890")
                     .speciality("Cardiology")
-                    .workingSchedules(new ArrayList<>())
                     .build();
         }
 
@@ -105,14 +105,6 @@ class AuthControllerTest {
                     .role(role)
                     .message("Registration successful. Please login.")
                     .build();
-        }
-
-        private void assertRegistrationResponse(
-                ResponseEntity<RegisterResponseDto> response, 
-                RegisterResponseDto expectedResponse, 
-                HttpStatus expectedStatus) {
-            assertEquals(expectedStatus, response.getStatusCode());
-            assertEquals(expectedResponse, response.getBody());
         }
     }
 
@@ -125,21 +117,31 @@ class AuthControllerTest {
             
             when(authService.login(any(LoginDto.class))).thenReturn(expectedResponse);
             
-            ResponseEntity<LoginResponseDto> response = authController.login(loginDto);
+            ResponseEntity<ApiResponseDto<LoginResponseDto>> response = authController.login(loginDto);
             
             assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertEquals(expectedResponse, response.getBody());
+            ApiResponseDto<LoginResponseDto> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(HttpStatus.OK.value(), body.getStatus());
+            assertEquals("Login successful", body.getMessage());
+            assertNotNull(body.getTimestamp());
+            assertEquals(expectedResponse, body.getData());
+            
             verify(authService).login(loginDto);
         }
 
         @Test
         void logoutReturnsOkStatus() {
-            ResponseEntity<Map<String, String>> response = authController.logout(httpServletRequest);
+            ResponseEntity<ApiResponseDto<Void>> response = authController.logout(httpServletRequest);
             
             assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals("Logged out successfully", response.getBody().get("message"));
-            assertEquals("success", response.getBody().get("status"));
+            ApiResponseDto<Void> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(HttpStatus.OK.value(), body.getStatus());
+            assertEquals("Logged out successfully", body.getMessage());
+            assertNotNull(body.getTimestamp());
+            assertNull(body.getData());
+            
             verify(authService).logout();
         }
 
@@ -173,9 +175,16 @@ class AuthControllerTest {
             TokenVerificationResponseDto expectedResponse = createTokenVerificationResponse(true);
             setupTokenVerification(VALID_TOKEN, expectedResponse);
             
-            ResponseEntity<TokenVerificationResponseDto> response = authController.verifyToken(httpServletRequest);
+            ResponseEntity<ApiResponseDto<TokenVerificationResponseDto>> response = authController.verifyToken(httpServletRequest);
             
-            assertTokenVerificationResponse(response, expectedResponse, HttpStatus.OK);
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            ApiResponseDto<TokenVerificationResponseDto> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(HttpStatus.OK.value(), body.getStatus());
+            assertEquals("Token verified successfully", body.getMessage());
+            assertNotNull(body.getTimestamp());
+            assertEquals(expectedResponse, body.getData());
+            
             verify(authService).verifyToken(VALID_TOKEN);
         }
 
@@ -187,9 +196,15 @@ class AuthControllerTest {
             
             setupTokenVerification(INVALID_TOKEN, expectedResponse);
             
-            ResponseEntity<TokenVerificationResponseDto> response = authController.verifyToken(httpServletRequest);
+            ResponseEntity<ApiResponseDto<TokenVerificationResponseDto>> response = authController.verifyToken(httpServletRequest);
             
-            assertTokenVerificationResponse(response, expectedResponse, HttpStatus.UNAUTHORIZED);
+            assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+            ApiResponseDto<TokenVerificationResponseDto> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(HttpStatus.UNAUTHORIZED.value(), body.getStatus());
+            assertEquals("Invalid or expired token", body.getMessage());
+            assertNotNull(body.getTimestamp());
+            
             verify(authService).verifyToken(INVALID_TOKEN);
         }
 
@@ -197,10 +212,15 @@ class AuthControllerTest {
         void verifyTokenNoAuthHeaderReturnsUnauthorizedStatus() {
             when(httpServletRequest.getHeader(AUTH_HEADER)).thenReturn(null);
             
-            ResponseEntity<TokenVerificationResponseDto> response = authController.verifyToken(httpServletRequest);
+            ResponseEntity<ApiResponseDto<TokenVerificationResponseDto>> response = authController.verifyToken(httpServletRequest);
             
             assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-            assertFalse(response.getBody().isValid());
+            ApiResponseDto<TokenVerificationResponseDto> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(HttpStatus.UNAUTHORIZED.value(), body.getStatus());
+            assertEquals("Invalid authentication token", body.getMessage());
+            assertNotNull(body.getTimestamp());
+            
             verifyNoInteractions(authService);
         }
 
@@ -208,10 +228,15 @@ class AuthControllerTest {
         void verifyTokenInvalidAuthHeaderFormatReturnsUnauthorizedStatus() {
             when(httpServletRequest.getHeader(AUTH_HEADER)).thenReturn("InvalidFormat token");
             
-            ResponseEntity<TokenVerificationResponseDto> response = authController.verifyToken(httpServletRequest);
+            ResponseEntity<ApiResponseDto<TokenVerificationResponseDto>> response = authController.verifyToken(httpServletRequest);
             
             assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-            assertFalse(response.getBody().isValid());
+            ApiResponseDto<TokenVerificationResponseDto> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(HttpStatus.UNAUTHORIZED.value(), body.getStatus());
+            assertEquals("Invalid authentication token", body.getMessage());
+            assertNotNull(body.getTimestamp());
+            
             verifyNoInteractions(authService);
         }
 
@@ -232,14 +257,6 @@ class AuthControllerTest {
         private void setupTokenVerification(String token, TokenVerificationResponseDto response) {
             when(httpServletRequest.getHeader(AUTH_HEADER)).thenReturn(BEARER_PREFIX + token);
             when(authService.verifyToken(token)).thenReturn(response);
-        }
-
-        private void assertTokenVerificationResponse(
-                ResponseEntity<TokenVerificationResponseDto> response,
-                TokenVerificationResponseDto expectedResponse,
-                HttpStatus expectedStatus) {
-            assertEquals(expectedStatus, response.getStatusCode());
-            assertEquals(expectedResponse, response.getBody());
         }
     }
 }

@@ -1,16 +1,12 @@
 package id.ac.ui.cs.advprog.beauthentication.dto;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -41,8 +37,4 @@ public class RegisterCaregiverDto {
 
     @NotBlank(message = "Speciality is required")
     private String speciality;
-
-    @NotEmpty(message = "Working schedules are required")
-    @Valid
-    private List<WorkingScheduleDto> workingSchedules;
 }

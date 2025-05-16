@@ -19,17 +19,13 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-class AuthServiceTest {
+class AuthServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
@@ -56,7 +52,7 @@ class AuthServiceTest {
     private Authentication authentication;
 
     @InjectMocks
-    private AuthService authService;
+    private AuthServiceImpl authService;
 
     private static final String TEST_EMAIL = "patient@example.com";
     private static final String TEST_PASSWORD = "password";
@@ -311,28 +307,6 @@ class AuthServiceTest {
     }
 
     private RegisterCaregiverDto createCaregiverDto() {
-        TimeChoiceDto timeChoice1 = TimeChoiceDto.builder()
-                .startTime(LocalTime.of(9, 0))
-                .endTime(LocalTime.of(12, 0))
-                .build();
-
-        TimeChoiceDto timeChoice2 = TimeChoiceDto.builder()
-                .startTime(LocalTime.of(13, 0))
-                .endTime(LocalTime.of(17, 0))
-                .build();
-
-        List<TimeChoiceDto> timeChoices = new ArrayList<>();
-        timeChoices.add(timeChoice1);
-        timeChoices.add(timeChoice2);
-
-        WorkingScheduleDto scheduleDto = WorkingScheduleDto.builder()
-                .dayOfWeek(DayOfWeek.MONDAY)
-                .timeChoices(timeChoices)
-                .build();
-
-        List<WorkingScheduleDto> scheduleDtos = new ArrayList<>();
-        scheduleDtos.add(scheduleDto);
-
         return RegisterCaregiverDto.builder()
                 .email(TEST_EMAIL)
                 .password(TEST_PASSWORD)
@@ -341,7 +315,6 @@ class AuthServiceTest {
                 .workAddress(TEST_WORK_ADDRESS)
                 .phoneNumber(TEST_PHONE)
                 .speciality(TEST_SPECIALITY)
-                .workingSchedules(scheduleDtos)
                 .build();
     }
 
@@ -387,7 +360,6 @@ class AuthServiceTest {
                 .phoneNumber(TEST_PHONE)
                 .speciality(TEST_SPECIALITY)
                 .role(Role.CAREGIVER)
-                .workingSchedules(new ArrayList<>())
                 .build();
     }
 

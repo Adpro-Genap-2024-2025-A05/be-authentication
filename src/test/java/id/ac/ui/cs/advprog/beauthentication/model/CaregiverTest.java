@@ -4,9 +4,6 @@ import id.ac.ui.cs.advprog.beauthentication.enums.Role;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.time.DayOfWeek;
-import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class CaregiverTest {
@@ -27,8 +24,6 @@ class CaregiverTest {
             assertEquals("1234567890", caregiver.getPhoneNumber());
             assertEquals("Cardiology", caregiver.getSpeciality());
             assertEquals(Role.CAREGIVER, caregiver.getRole());
-            assertNotNull(caregiver.getWorkingSchedules());
-            assertTrue(caregiver.getWorkingSchedules().isEmpty());
         }
     }
 
@@ -84,74 +79,6 @@ class CaregiverTest {
     }
 
     @Nested
-    class WorkingScheduleTests {
-        @Test
-        void workingSchedulesDefaultToEmptyList() {
-            Caregiver caregiver = new Caregiver();
-
-            assertNotNull(caregiver.getWorkingSchedules());
-            assertTrue(caregiver.getWorkingSchedules().isEmpty());
-        }
-
-        @Test
-        void addWorkingScheduleAddsScheduleAndSetsCaregiver() {
-            Caregiver caregiver = new Caregiver();
-            WorkingSchedule schedule = createSchedule(DayOfWeek.MONDAY);
-
-            caregiver.addWorkingSchedule(schedule);
-
-            assertEquals(1, caregiver.getWorkingSchedules().size());
-            assertEquals(schedule, caregiver.getWorkingSchedules().get(0));
-            assertEquals(caregiver, schedule.getCaregiver());
-        }
-
-        @Test
-        void addWorkingScheduleHandlesNullSchedule() {
-            Caregiver caregiver = new Caregiver();
-
-            caregiver.addWorkingSchedule(null);
-
-            assertTrue(caregiver.getWorkingSchedules().isEmpty());
-        }
-
-        @Test
-        void removeWorkingScheduleRemovesScheduleAndNullsCaregiver() {
-            Caregiver caregiver = new Caregiver();
-            WorkingSchedule schedule = createSchedule(DayOfWeek.MONDAY);
-
-            caregiver.addWorkingSchedule(schedule);
-            caregiver.removeWorkingSchedule(schedule);
-
-            assertTrue(caregiver.getWorkingSchedules().isEmpty());
-            assertNull(schedule.getCaregiver());
-        }
-
-        @Test
-        void removeWorkingScheduleHandlesNullSchedule() {
-            Caregiver caregiver = new Caregiver();
-            WorkingSchedule schedule = createSchedule(DayOfWeek.MONDAY);
-            caregiver.addWorkingSchedule(schedule);
-
-            caregiver.removeWorkingSchedule(null);
-
-            assertEquals(1, caregiver.getWorkingSchedules().size());
-        }
-
-        @Test
-        void removeWorkingScheduleHandlesNonExistentSchedule() {
-            Caregiver caregiver = new Caregiver();
-            WorkingSchedule schedule1 = createSchedule(DayOfWeek.MONDAY);
-            WorkingSchedule schedule2 = createSchedule(DayOfWeek.TUESDAY);
-
-            caregiver.addWorkingSchedule(schedule1);
-            caregiver.removeWorkingSchedule(schedule2);
-
-            assertEquals(1, caregiver.getWorkingSchedules().size());
-            assertEquals(schedule1, caregiver.getWorkingSchedules().get(0));
-        }
-    }
-
-    @Nested
     class EqualsHashCodeTests {
         @Test
         void equalsReturnsTrueForSameId() {
@@ -197,13 +124,6 @@ class CaregiverTest {
                 .phoneNumber("1234567890")
                 .speciality("Cardiology")
                 .role(Role.CAREGIVER)
-                .workingSchedules(new ArrayList<>())
-                .build();
-    }
-
-    private WorkingSchedule createSchedule(DayOfWeek dayOfWeek) {
-        return WorkingSchedule.builder()
-                .dayOfWeek(dayOfWeek)
                 .build();
     }
 }
