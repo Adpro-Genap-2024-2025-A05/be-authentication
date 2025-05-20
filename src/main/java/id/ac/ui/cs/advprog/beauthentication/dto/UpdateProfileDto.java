@@ -12,9 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateProfileDto {
-    @Email(message = "Invalid email format")
-    private String email;
-    
     private String name;
     
     private String address;
