@@ -1,10 +1,16 @@
 package id.ac.ui.cs.advprog.beauthentication.controller;
 
 import id.ac.ui.cs.advprog.beauthentication.dto.*;
+import id.ac.ui.cs.advprog.beauthentication.model.Caregiver;
+import id.ac.ui.cs.advprog.beauthentication.model.Pacilian;
 import id.ac.ui.cs.advprog.beauthentication.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -77,5 +83,21 @@ public class AuthController {
                     .body(ApiResponseDto.error(HttpStatus.UNAUTHORIZED.value(), 
                                         "Invalid or expired token"));
         }
+    }
+
+    @GetMapping(path = "/caregiver/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, String>> getCaregiverNameById(@PathVariable String id) {
+        Caregiver caregiver = authService.getCaregiverByID(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("name", caregiver.getName());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(path = "/pacilian/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, String>> getPacilianById(@PathVariable String id) {
+        Pacilian pacilian = authService.getPacilianByID(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("name", pacilian.getName());
+        return ResponseEntity.ok(response);
     }
 }

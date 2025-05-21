@@ -6,6 +6,7 @@ import id.ac.ui.cs.advprog.beauthentication.model.*;
 import id.ac.ui.cs.advprog.beauthentication.repository.CaregiverRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.PacilianRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -174,5 +175,15 @@ public class AuthServiceImpl implements AuthService {
         return TokenVerificationResponseDto.builder()
                 .valid(false)
                 .build();
+    }
+
+    public Caregiver getCaregiverByID(String id) {
+    return caregiverRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Caregiver with ID " + id + " not found"));
+    }
+
+    public Pacilian getPacilianByID(String id) {
+        return pacilianRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pacilian with ID " + id + " not found"));
     }
 }

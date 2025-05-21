@@ -39,6 +39,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/verify").permitAll()
                         .requestMatchers("/profile/**").authenticated()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/auth/caregiver/**").permitAll()
+                        .requestMatchers("/pacilian/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
