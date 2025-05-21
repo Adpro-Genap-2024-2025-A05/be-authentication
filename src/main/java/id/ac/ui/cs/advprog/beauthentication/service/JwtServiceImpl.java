@@ -79,6 +79,7 @@ public class JwtServiceImpl implements JwtService {
         if (userDetails instanceof User) {
             User user = (User) userDetails;
             claims.put("id", user.getId());
+            claims.put("name", user.getName());
             claims.put("role", user.getRole().getValue());
         }
         

@@ -36,16 +36,6 @@ public class ProfileServiceImpl implements ProfileService {
     public UserProfileDto updateUserProfile(UpdateProfileDto updateProfileDto, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         
-        if (updateProfileDto.getEmail() != null && !updateProfileDto.getEmail().isEmpty() && 
-                !user.getEmail().equals(updateProfileDto.getEmail()) && 
-                userRepository.existsByEmail(updateProfileDto.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
-        }
-        
-        if (updateProfileDto.getEmail() != null && !updateProfileDto.getEmail().isEmpty()) {
-            user.setEmail(updateProfileDto.getEmail());
-        }
-        
         if (updateProfileDto.getName() != null && !updateProfileDto.getName().isEmpty()) {
             user.setName(updateProfileDto.getName());
         }
