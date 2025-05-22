@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.beauthentication.model;
 
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality; 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ class CaregiverTest {
             assertEquals("Home Address", caregiver.getAddress());
             assertEquals("Work Address", caregiver.getWorkAddress());
             assertEquals("1234567890", caregiver.getPhoneNumber());
-            assertEquals("Cardiology", caregiver.getSpeciality());
+            assertEquals(Speciality.DOKTER_UMUM, caregiver.getSpeciality()); 
             assertEquals(Role.CAREGIVER, caregiver.getRole());
         }
     }
@@ -33,9 +34,9 @@ class CaregiverTest {
         void specialityGetterAndSetterWorkCorrectly() {
             Caregiver caregiver = new Caregiver();
 
-            caregiver.setSpeciality("Neurology");
+            caregiver.setSpeciality(Speciality.SPESIALIS_ANAK); 
 
-            assertEquals("Neurology", caregiver.getSpeciality());
+            assertEquals(Speciality.SPESIALIS_ANAK, caregiver.getSpeciality()); 
         }
 
         @Test
@@ -100,12 +101,12 @@ class CaregiverTest {
         void hashCodeReturnsSameValueForEqualObjects() {
             Caregiver caregiver1 = Caregiver.builder()
                     .id("caregiver-id")
-                    .speciality("Cardiology")
+                    .speciality(Speciality.SPESIALIS_KULIT) 
                     .build();
 
             Caregiver caregiver2 = Caregiver.builder()
                     .id("caregiver-id")
-                    .speciality("Cardiology")
+                    .speciality(Speciality.SPESIALIS_KULIT) 
                     .build();
 
             assertEquals(caregiver1.hashCode(), caregiver2.hashCode());
@@ -122,7 +123,7 @@ class CaregiverTest {
                 .address("Home Address")
                 .workAddress("Work Address")
                 .phoneNumber("1234567890")
-                .speciality("Cardiology")
+                .speciality(Speciality.DOKTER_UMUM) 
                 .role(Role.CAREGIVER)
                 .build();
     }

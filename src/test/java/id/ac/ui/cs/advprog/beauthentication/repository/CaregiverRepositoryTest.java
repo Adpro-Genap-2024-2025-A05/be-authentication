@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.beauthentication.repository;
 
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality; 
 import id.ac.ui.cs.advprog.beauthentication.model.Caregiver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -29,7 +30,7 @@ class CaregiverRepositoryTest {
     private Caregiver testCaregiver;
     private final String TEST_EMAIL = "doctor@example.com";
     private final String TEST_NIK = "9876543210987654";
-    private final String TEST_SPECIALITY = "Cardiologist";
+    private final Speciality TEST_SPECIALITY = Speciality.DOKTER_UMUM; 
     private final String TEST_WORK_ADDRESS = "123 Hospital St.";
 
     @BeforeEach
@@ -50,7 +51,7 @@ class CaregiverRepositoryTest {
             
             assertTrue(retrievedCaregiver.isPresent());
             assertEquals(TEST_EMAIL, retrievedCaregiver.get().getEmail());
-            assertEquals(TEST_SPECIALITY, retrievedCaregiver.get().getSpeciality());
+            assertEquals(TEST_SPECIALITY, retrievedCaregiver.get().getSpeciality()); 
             assertEquals(TEST_WORK_ADDRESS, retrievedCaregiver.get().getWorkAddress());
         }
         
@@ -79,7 +80,7 @@ class CaregiverRepositoryTest {
             
             assertTrue(found.isPresent());
             assertEquals(TEST_EMAIL, found.get().getEmail());
-            assertEquals(TEST_SPECIALITY, found.get().getSpeciality());
+            assertEquals(TEST_SPECIALITY, found.get().getSpeciality()); 
         }
         
         @Test
@@ -123,7 +124,7 @@ class CaregiverRepositoryTest {
                 .address(TEST_WORK_ADDRESS)
                 .workAddress(TEST_WORK_ADDRESS)
                 .phoneNumber("0811222333")
-                .speciality(TEST_SPECIALITY)
+                .speciality(TEST_SPECIALITY) 
                 .role(Role.CAREGIVER)
                 .build();
     }
@@ -143,7 +144,7 @@ class CaregiverRepositoryTest {
                 .address("456 Hospital Ave.")
                 .workAddress("456 Hospital Ave.")
                 .phoneNumber("0899887766")
-                .speciality("Neurologist")
+                .speciality(Speciality.SPESIALIS_ANAK) 
                 .role(Role.CAREGIVER)
                 .build();
         
@@ -160,7 +161,7 @@ class CaregiverRepositoryTest {
                 .address("789 No Role St.")
                 .workAddress("789 No Role St.")
                 .phoneNumber("0866778899")
-                .speciality("General Practitioner")
+                .speciality(Speciality.SPESIALIS_PENYAKIT_DALAM) 
                 .build();
     }
 }

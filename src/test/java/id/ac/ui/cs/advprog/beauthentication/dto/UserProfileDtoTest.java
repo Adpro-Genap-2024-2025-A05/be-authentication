@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.beauthentication.dto;
 
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality; 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,7 +19,7 @@ class UserProfileDtoTest {
                 .phoneNumber("1234567890")
                 .role(Role.PACILIAN)
                 .medicalHistory("Test medical history")
-                .speciality("Test speciality")
+                .speciality(Speciality.DOKTER_UMUM) 
                 .workAddress("Test work address")
                 .build();
 
@@ -30,7 +31,7 @@ class UserProfileDtoTest {
         assertEquals("1234567890", builderDto.getPhoneNumber());
         assertEquals(Role.PACILIAN, builderDto.getRole());
         assertEquals("Test medical history", builderDto.getMedicalHistory());
-        assertEquals("Test speciality", builderDto.getSpeciality());
+        assertEquals(Speciality.DOKTER_UMUM, builderDto.getSpeciality()); 
         assertEquals("Test work address", builderDto.getWorkAddress());
 
         UserProfileDto noArgsDto = new UserProfileDto();
@@ -57,7 +58,7 @@ class UserProfileDtoTest {
                 "1234567890",
                 Role.PACILIAN,
                 "Test medical history",
-                "Test speciality",
+                Speciality.SPESIALIS_ANAK, 
                 "Test work address"
         );
         
@@ -69,7 +70,7 @@ class UserProfileDtoTest {
         assertEquals("1234567890", dto.getPhoneNumber());
         assertEquals(Role.PACILIAN, dto.getRole());
         assertEquals("Test medical history", dto.getMedicalHistory());
-        assertEquals("Test speciality", dto.getSpeciality());
+        assertEquals(Speciality.SPESIALIS_ANAK, dto.getSpeciality()); 
         assertEquals("Test work address", dto.getWorkAddress());
     }
 
@@ -85,7 +86,7 @@ class UserProfileDtoTest {
         dto.setPhoneNumber("1234567890");
         dto.setRole(Role.PACILIAN);
         dto.setMedicalHistory("Test medical history");
-        dto.setSpeciality("Test speciality");
+        dto.setSpeciality(Speciality.SPESIALIS_KULIT); 
         dto.setWorkAddress("Test work address");
         
         assertEquals("test-id", dto.getId());
@@ -96,7 +97,7 @@ class UserProfileDtoTest {
         assertEquals("1234567890", dto.getPhoneNumber());
         assertEquals(Role.PACILIAN, dto.getRole());
         assertEquals("Test medical history", dto.getMedicalHistory());
-        assertEquals("Test speciality", dto.getSpeciality());
+        assertEquals(Speciality.SPESIALIS_KULIT, dto.getSpeciality()); 
         assertEquals("Test work address", dto.getWorkAddress());
     }
 
@@ -111,7 +112,7 @@ class UserProfileDtoTest {
                 "1234567890",
                 Role.PACILIAN,
                 "Test medical history",
-                "Test speciality",
+                Speciality.DOKTER_UMUM, 
                 "Test work address"
         );
         
@@ -124,7 +125,7 @@ class UserProfileDtoTest {
                 "1234567890",
                 Role.PACILIAN,
                 "Test medical history",
-                "Test speciality",
+                Speciality.DOKTER_UMUM, 
                 "Test work address"
         );
         
@@ -137,7 +138,7 @@ class UserProfileDtoTest {
                 "1234567890",
                 Role.PACILIAN,
                 "Test medical history",
-                "Test speciality",
+                Speciality.SPESIALIS_ANAK, 
                 "Test work address"
         );
 
@@ -158,7 +159,7 @@ class UserProfileDtoTest {
                 "1234567890",
                 Role.PACILIAN,
                 "Test medical history",
-                "Test speciality",
+                Speciality.DOKTER_UMUM, 
                 "Test work address"
         );
         
@@ -172,7 +173,7 @@ class UserProfileDtoTest {
         assertTrue(toString.contains("phoneNumber=1234567890"));
         assertTrue(toString.contains("role=PACILIAN"));
         assertTrue(toString.contains("medicalHistory=Test medical history"));
-        assertTrue(toString.contains("speciality=Test speciality"));
+        assertTrue(toString.contains("speciality=DOKTER_UMUM")); 
         assertTrue(toString.contains("workAddress=Test work address"));
     }
 }

@@ -1,7 +1,9 @@
 package id.ac.ui.cs.advprog.beauthentication.dto;
 
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,6 +37,6 @@ public class RegisterCaregiverDto {
     @Pattern(regexp = "\\d{10,13}", message = "Phone number must be 10-13 digits")
     private String phoneNumber;
 
-    @NotBlank(message = "Speciality is required")
-    private String speciality;
+    @NotNull(message = "Specialization is required")
+    private Speciality speciality;
 }

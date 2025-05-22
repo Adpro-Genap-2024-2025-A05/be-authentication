@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.beauthentication.service;
 
 import id.ac.ui.cs.advprog.beauthentication.dto.*;
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality; 
 import id.ac.ui.cs.advprog.beauthentication.model.*;
 import id.ac.ui.cs.advprog.beauthentication.repository.CaregiverRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.PacilianRepository;
@@ -63,7 +64,7 @@ class AuthServiceImplTest {
     private static final String TEST_PHONE = "1234567890";
     private static final String TEST_MEDICAL_HISTORY = "Some medical history";
     private static final String TEST_WORK_ADDRESS = "Work Address";
-    private static final String TEST_SPECIALITY = "Cardiology";
+    private static final Speciality TEST_SPECIALITY = Speciality.DOKTER_UMUM; 
     private static final String SUCCESS_MESSAGE = "Registration successful. Please login.";
 
     @BeforeEach
@@ -314,7 +315,7 @@ class AuthServiceImplTest {
                 .nik(TEST_NIK)
                 .workAddress(TEST_WORK_ADDRESS)
                 .phoneNumber(TEST_PHONE)
-                .speciality(TEST_SPECIALITY)
+                .speciality(TEST_SPECIALITY) 
                 .build();
     }
 
@@ -358,7 +359,7 @@ class AuthServiceImplTest {
                 .address(TEST_WORK_ADDRESS)
                 .workAddress(TEST_WORK_ADDRESS)
                 .phoneNumber(TEST_PHONE)
-                .speciality(TEST_SPECIALITY)
+                .speciality(TEST_SPECIALITY) 
                 .role(Role.CAREGIVER)
                 .build();
     }

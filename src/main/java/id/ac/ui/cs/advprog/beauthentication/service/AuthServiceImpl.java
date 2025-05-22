@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.beauthentication.service;
 
 import id.ac.ui.cs.advprog.beauthentication.dto.*;
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 import id.ac.ui.cs.advprog.beauthentication.model.*;
 import id.ac.ui.cs.advprog.beauthentication.repository.CaregiverRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.PacilianRepository;
@@ -105,6 +106,8 @@ public class AuthServiceImpl implements AuthService {
     }
     
     private Caregiver createCaregiverEntity(RegisterCaregiverDto registerDto) {
+        Speciality.validatespeciality(registerDto.getSpeciality());
+        
         return Caregiver.builder()
                 .email(registerDto.getEmail())
                 .password(passwordEncoder.encode(registerDto.getPassword()))
