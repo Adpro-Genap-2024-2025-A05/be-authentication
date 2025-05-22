@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.beauthentication.dto;
 
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -28,7 +29,7 @@ class UpdateProfileDtoTest {
         dto.setAddress("Test Address");
         dto.setPhoneNumber("1234567890");
         dto.setMedicalHistory("Test medical history");
-        dto.setSpeciality("Test speciality");
+        dto.setSpeciality(Speciality.DOKTER_UMUM); 
         dto.setWorkAddress("Test work address");
 
         Set<ConstraintViolation<UpdateProfileDto>> violations = validator.validate(dto);
@@ -66,7 +67,7 @@ class UpdateProfileDtoTest {
                 .address("Test Address")
                 .phoneNumber("1234567890")
                 .medicalHistory("Test medical history")
-                .speciality("Test speciality")
+                .speciality(Speciality.SPESIALIS_ANAK) 
                 .workAddress("Test work address")
                 .build();
 
@@ -74,7 +75,7 @@ class UpdateProfileDtoTest {
         assertEquals("Test Address", builderDto.getAddress());
         assertEquals("1234567890", builderDto.getPhoneNumber());
         assertEquals("Test medical history", builderDto.getMedicalHistory());
-        assertEquals("Test speciality", builderDto.getSpeciality());
+        assertEquals(Speciality.SPESIALIS_ANAK, builderDto.getSpeciality()); 
         assertEquals("Test work address", builderDto.getWorkAddress());
 
         UpdateProfileDto noArgsDto = new UpdateProfileDto();
@@ -93,7 +94,7 @@ class UpdateProfileDtoTest {
                 "Test Address",
                 "1234567890",
                 "Test medical history",
-                "Test speciality",
+                Speciality.SPESIALIS_KULIT, 
                 "Test work address"
         );
         
@@ -101,7 +102,7 @@ class UpdateProfileDtoTest {
         assertEquals("Test Address", dto.getAddress());
         assertEquals("1234567890", dto.getPhoneNumber());
         assertEquals("Test medical history", dto.getMedicalHistory());
-        assertEquals("Test speciality", dto.getSpeciality());
+        assertEquals(Speciality.SPESIALIS_KULIT, dto.getSpeciality()); 
         assertEquals("Test work address", dto.getWorkAddress());
     }
 
@@ -112,7 +113,7 @@ class UpdateProfileDtoTest {
                 "Test Address",
                 "1234567890",
                 "Test medical history",
-                "Test speciality",
+                Speciality.DOKTER_UMUM, 
                 "Test work address"
         );
         
@@ -121,7 +122,7 @@ class UpdateProfileDtoTest {
                 "Test Address",
                 "1234567890",
                 "Test medical history",
-                "Test speciality",
+                Speciality.DOKTER_UMUM, 
                 "Test work address"
         );
         
@@ -130,7 +131,7 @@ class UpdateProfileDtoTest {
                 "Test Address",
                 "1234567890",
                 "Test medical history",
-                "Test speciality",
+                Speciality.SPESIALIS_ANAK, 
                 "Test work address"
         );
 
@@ -147,7 +148,7 @@ class UpdateProfileDtoTest {
                 "Test Address",
                 "1234567890",
                 "Test medical history",
-                "Test speciality",
+                Speciality.SPESIALIS_PENYAKIT_DALAM, 
                 "Test work address"
         );
         
@@ -157,7 +158,7 @@ class UpdateProfileDtoTest {
         assertTrue(toString.contains("address=Test Address"));
         assertTrue(toString.contains("phoneNumber=1234567890"));
         assertTrue(toString.contains("medicalHistory=Test medical history"));
-        assertTrue(toString.contains("speciality=Test speciality"));
+        assertTrue(toString.contains("speciality=SPESIALIS_PENYAKIT_DALAM")); 
         assertTrue(toString.contains("workAddress=Test work address"));
     }
 }

@@ -43,7 +43,7 @@ public class DataService {
                 caregiver.getName().toLowerCase().contains(name.toLowerCase());
         
         boolean specialityMatches = speciality == null || speciality.trim().isEmpty() || 
-                caregiver.getSpeciality().toLowerCase().contains(speciality.toLowerCase());
+                caregiver.getSpeciality().getDisplayName().toLowerCase().contains(speciality.toLowerCase());
         
         return nameMatches && specialityMatches;
     }

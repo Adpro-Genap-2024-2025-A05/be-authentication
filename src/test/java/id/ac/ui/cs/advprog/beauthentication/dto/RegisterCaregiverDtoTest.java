@@ -3,6 +3,8 @@ package id.ac.ui.cs.advprog.beauthentication.dto;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class RegisterCaregiverDtoTest {
@@ -13,7 +15,7 @@ class RegisterCaregiverDtoTest {
     private static final String TEST_NIK = "1234567890123456";
     private static final String TEST_WORK_ADDRESS = "Work Address";
     private static final String TEST_PHONE = "1234567890";
-    private static final String TEST_SPECIALITY = "Cardiology";
+    private static final Speciality TEST_SPECIALITY = Speciality.DOKTER_UMUM;
 
     @Nested
     class ConstructorTests {
@@ -100,7 +102,7 @@ class RegisterCaregiverDtoTest {
                     .nik("6543210987654321")
                     .workAddress("Different Address")
                     .phoneNumber("0987654321")
-                    .speciality("Neurology")
+                    .speciality(Speciality.SPESIALIS_ANAK)
                     .build();
             
             assertNotEquals(dto1, dto2);

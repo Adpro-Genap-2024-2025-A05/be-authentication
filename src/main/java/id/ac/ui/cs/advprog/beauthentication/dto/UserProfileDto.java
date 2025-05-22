@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.beauthentication.dto;
 
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,6 @@ public class UserProfileDto {
     private String phoneNumber;
     private Role role;
     private String medicalHistory;
-    private String speciality;
+    private Speciality speciality;
     private String workAddress;
 }

@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.beauthentication.dto.PasswordChangeDto;
 import id.ac.ui.cs.advprog.beauthentication.dto.UpdateProfileDto;
 import id.ac.ui.cs.advprog.beauthentication.dto.UserProfileDto;
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 import id.ac.ui.cs.advprog.beauthentication.model.Caregiver;
 import id.ac.ui.cs.advprog.beauthentication.model.Pacilian;
 import id.ac.ui.cs.advprog.beauthentication.model.User;
@@ -60,7 +61,8 @@ public class ProfileServiceImpl implements ProfileService {
             Caregiver caregiver = caregiverRepository.findById(user.getId())
                     .orElseThrow(() -> new IllegalStateException("Caregiver not found"));
             
-            if (updateProfileDto.getSpeciality() != null && !updateProfileDto.getSpeciality().isEmpty()) {
+            if (updateProfileDto.getSpeciality() != null) {
+                Speciality.validatespeciality(updateProfileDto.getSpeciality());
                 caregiver.setSpeciality(updateProfileDto.getSpeciality());
             }
             

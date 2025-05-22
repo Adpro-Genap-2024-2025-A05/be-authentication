@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 
 import java.util.Optional;
 
@@ -85,7 +86,7 @@ class ProfileServiceImplTest {
                 .address("Test Address")
                 .phoneNumber("1234567890")
                 .role(Role.CAREGIVER)
-                .speciality("Test speciality")
+                .speciality(Speciality.DOKTER_UMUM)
                 .workAddress("Test work address")
                 .build();
 
@@ -94,7 +95,7 @@ class ProfileServiceImplTest {
         updateProfileDto.setAddress("New Address");
         updateProfileDto.setPhoneNumber("9876543210");
         updateProfileDto.setMedicalHistory("New medical history");
-        updateProfileDto.setSpeciality("New speciality");
+        updateProfileDto.setSpeciality(Speciality.DOKTER_UMUM);
         updateProfileDto.setWorkAddress("New work address");
     }
 
@@ -483,7 +484,7 @@ class ProfileServiceImplTest {
     @Test
     void updateUserProfileWhenCaregiverWithNullWorkAddressShouldNotUpdateWorkAddress() {
         testUser.setRole(Role.CAREGIVER);
-        updateProfileDto.setSpeciality("New Speciality");
+        updateProfileDto.setSpeciality(Speciality.DOKTER_UMUM);
         updateProfileDto.setWorkAddress(null);
         
         User updatedUser = User.builder()
@@ -529,32 +530,6 @@ class ProfileServiceImplTest {
 
         profileService.updateUserProfile(updateProfileDto, authentication);
         verify(caregiverRepository, never()).save(any(Caregiver.class));
-    }
-
-    @Test
-    void updateUserProfileWhenBothSpecialityAndWorkAddressEmptyShouldNotSaveCaregiver() {
-        testUser.setRole(Role.CAREGIVER);
-        updateProfileDto.setSpeciality("");
-        updateProfileDto.setWorkAddress("");
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(testUser.getEmail())
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(caregiverRepository.findById(testUser.getId())).thenReturn(Optional.of(testCaregiver));
-
-        profileService.updateUserProfile(updateProfileDto, authentication);
-
-        verify(caregiverRepository).save(any(Caregiver.class));
     }
 
     @Test
