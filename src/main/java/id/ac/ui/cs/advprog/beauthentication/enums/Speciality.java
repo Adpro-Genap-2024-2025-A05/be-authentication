@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.beauthentication.enums;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import java.util.Arrays;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 @Getter
 public enum Speciality {
@@ -58,15 +59,6 @@ public enum Speciality {
         }
         return false;
     }
-    
-    public static Speciality fromDisplayName(String displayName) {
-        for (Speciality speciality : Speciality.values()) {
-            if (speciality.getDisplayName().equals(displayName)) {
-                return speciality;
-            }
-        }
-        throw new IllegalArgumentException("No speciality found for display name: " + displayName);
-    }
 
     public static void validatespeciality(Speciality speciality) {
         if (speciality == null) {
@@ -80,5 +72,15 @@ public enum Speciality {
             throw new IllegalArgumentException("Invalid speciality: " + speciality + 
                 ". Must be one of: " + Arrays.toString(Speciality.values()));
         }
+    }
+
+    @JsonCreator
+    public static Speciality fromDisplayName(String displayName) {
+        for (Speciality speciality : Speciality.values()) {
+            if (speciality.getDisplayName().equalsIgnoreCase(displayName)) {
+                return speciality;
+            }
+        }
+        throw new IllegalArgumentException("No speciality found for display name: " + displayName);
     }
 }
