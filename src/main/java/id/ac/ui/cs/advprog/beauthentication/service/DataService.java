@@ -2,7 +2,7 @@ package id.ac.ui.cs.advprog.beauthentication.service;
 
 import id.ac.ui.cs.advprog.beauthentication.dto.CaregiverPublicDto;
 import id.ac.ui.cs.advprog.beauthentication.model.Caregiver;
-import id.ac.ui.cs.advprog.beauthentication.repository.DataRepository;
+import id.ac.ui.cs.advprog.beauthentication.repository.CaregiverRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,17 +13,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DataService {
 
-    private final DataRepository dataRepository;
+    private final CaregiverRepository caregiverRepository;
 
     public List<CaregiverPublicDto> getAllActiveCaregivers() {
-        return dataRepository.findAll()
+        return caregiverRepository.findAll()
                 .stream()
                 .map(this::convertToPublicDto)
                 .collect(Collectors.toList());
     }
 
     public List<CaregiverPublicDto> searchCaregivers(String name, String speciality) {
-        List<Caregiver> caregivers = dataRepository.findAll();
+        List<Caregiver> caregivers = caregiverRepository.findAll();
         
         return caregivers.stream()
                 .filter(caregiver -> matchesSearchCriteria(caregiver, name, speciality))
@@ -32,7 +32,7 @@ public class DataService {
     }
 
     public CaregiverPublicDto getCaregiverById(String id) {
-        Caregiver caregiver = dataRepository.findById(id)
+        Caregiver caregiver = caregiverRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Caregiver not found with id: " + id));
         
         return convertToPublicDto(caregiver);
