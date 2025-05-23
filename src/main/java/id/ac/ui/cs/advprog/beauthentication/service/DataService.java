@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.beauthentication.service;
 
 import id.ac.ui.cs.advprog.beauthentication.dto.CaregiverPublicDto;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 import id.ac.ui.cs.advprog.beauthentication.model.Caregiver;
 import id.ac.ui.cs.advprog.beauthentication.repository.CaregiverRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
-    public List<CaregiverPublicDto> searchCaregivers(String name, String speciality) {
+    public List<CaregiverPublicDto> searchCaregivers(String name, Speciality speciality) {
         List<Caregiver> caregivers = caregiverRepository.findAll();
         
         return caregivers.stream()
@@ -38,12 +39,12 @@ public class DataService {
         return convertToPublicDto(caregiver);
     }
 
-    private boolean matchesSearchCriteria(Caregiver caregiver, String name, String speciality) {
+    private boolean matchesSearchCriteria(Caregiver caregiver, String name, Speciality speciality) {
         boolean nameMatches = name == null || name.trim().isEmpty() || 
                 caregiver.getName().toLowerCase().contains(name.toLowerCase());
         
-        boolean specialityMatches = speciality == null || speciality.trim().isEmpty() || 
-                caregiver.getSpeciality().getDisplayName().toLowerCase().contains(speciality.toLowerCase());
+        boolean specialityMatches = speciality == null || 
+                caregiver.getSpeciality().equals(speciality);
         
         return nameMatches && specialityMatches;
     }
