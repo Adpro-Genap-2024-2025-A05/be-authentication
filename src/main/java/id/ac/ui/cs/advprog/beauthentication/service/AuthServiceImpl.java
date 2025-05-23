@@ -113,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(registerDto.getPassword()))
                 .name(registerDto.getName())
                 .nik(registerDto.getNik())
-                .address(registerDto.getWorkAddress())
+                .address(registerDto.getAddress())
                 .workAddress(registerDto.getWorkAddress())
                 .phoneNumber(registerDto.getPhoneNumber())
                 .speciality(registerDto.getSpeciality())

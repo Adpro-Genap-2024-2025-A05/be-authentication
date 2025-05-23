@@ -132,6 +132,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .nik(caregiver.getNik())
                 .phoneNumber(caregiver.getPhoneNumber())
                 .role(caregiver.getRole())
+                .address(caregiver.getAddress())
                 .speciality(caregiver.getSpeciality())
                 .workAddress(caregiver.getWorkAddress())
                 .build();

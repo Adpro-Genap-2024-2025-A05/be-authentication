@@ -30,6 +30,9 @@ public class RegisterCaregiverDto {
     @Pattern(regexp = "\\d{16}", message = "NIK must be 16 digits")
     private String nik;
 
+    @NotBlank(message = "Address is required")
+    private String address;
+
     @NotBlank(message = "Work address is required")
     private String workAddress;
 
