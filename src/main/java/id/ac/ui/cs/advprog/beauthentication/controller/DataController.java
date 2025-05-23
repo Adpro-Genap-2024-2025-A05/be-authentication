@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.beauthentication.controller;
 
 import id.ac.ui.cs.advprog.beauthentication.dto.ApiResponseDto;
 import id.ac.ui.cs.advprog.beauthentication.dto.CaregiverPublicDto;
+import id.ac.ui.cs.advprog.beauthentication.dto.PacilianPublicDto;
 import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 import id.ac.ui.cs.advprog.beauthentication.service.DataService;
 import lombok.RequiredArgsConstructor;
@@ -68,12 +69,21 @@ public class DataController {
                                                 caregivers));
         }
 
-        @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+        @GetMapping(path = "/caregiver/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
         public ResponseEntity<ApiResponseDto<CaregiverPublicDto>> getCaregiverById(@PathVariable String id) {
                 CaregiverPublicDto caregiver = dataService.getCaregiverById(id);
                 return ResponseEntity.ok(
                                 ApiResponseDto.success(HttpStatus.OK.value(),
                                                 "Caregiver retrieved successfully",
                                                 caregiver));
+        }
+
+        @GetMapping(path = "/pacilian/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+        public ResponseEntity<ApiResponseDto<PacilianPublicDto>> getPacilianById(@PathVariable String id) {
+                PacilianPublicDto pacilian = dataService.getPacilianById(id);
+                return ResponseEntity.ok(
+                                ApiResponseDto.success(HttpStatus.OK.value(),
+                                                "Pacilian retrieved successfully",
+                                                pacilian));
         }
 }

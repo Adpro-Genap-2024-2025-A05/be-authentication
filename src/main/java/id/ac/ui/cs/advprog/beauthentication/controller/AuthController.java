@@ -84,20 +84,4 @@ public class AuthController {
                                         "Invalid or expired token"));
         }
     }
-
-    @GetMapping(path = "/caregiver/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> getCaregiverNameById(@PathVariable String id) {
-        Caregiver caregiver = authService.getCaregiverByID(id);
-        Map<String, String> response = new HashMap<>();
-        response.put("name", caregiver.getName());
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping(path = "/pacilian/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> getPacilianById(@PathVariable String id) {
-        Pacilian pacilian = authService.getPacilianByID(id);
-        Map<String, String> response = new HashMap<>();
-        response.put("name", pacilian.getName());
-        return ResponseEntity.ok(response);
-    }
 }
