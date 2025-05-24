@@ -1,10 +1,16 @@
 package id.ac.ui.cs.advprog.beauthentication.controller;
 
 import id.ac.ui.cs.advprog.beauthentication.dto.*;
+import id.ac.ui.cs.advprog.beauthentication.model.Caregiver;
+import id.ac.ui.cs.advprog.beauthentication.model.Pacilian;
 import id.ac.ui.cs.advprog.beauthentication.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

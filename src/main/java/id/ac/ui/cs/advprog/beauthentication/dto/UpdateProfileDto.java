@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.beauthentication.dto;
 
-import jakarta.validation.constraints.Email;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,9 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateProfileDto {
-    @Email(message = "Invalid email format")
-    private String email;
-    
     private String name;
     
     private String address;
@@ -24,6 +21,6 @@ public class UpdateProfileDto {
     
     private String medicalHistory;
     
-    private String speciality;
+    private Speciality speciality;
     private String workAddress;
 }

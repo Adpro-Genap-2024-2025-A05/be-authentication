@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 
 import java.util.Optional;
 
@@ -85,17 +86,16 @@ class ProfileServiceImplTest {
                 .address("Test Address")
                 .phoneNumber("1234567890")
                 .role(Role.CAREGIVER)
-                .speciality("Test speciality")
+                .speciality(Speciality.DOKTER_UMUM)
                 .workAddress("Test work address")
                 .build();
 
         updateProfileDto = new UpdateProfileDto();
-        updateProfileDto.setEmail("new@example.com");
         updateProfileDto.setName("New Name");
         updateProfileDto.setAddress("New Address");
         updateProfileDto.setPhoneNumber("9876543210");
         updateProfileDto.setMedicalHistory("New medical history");
-        updateProfileDto.setSpeciality("New speciality");
+        updateProfileDto.setSpeciality(Speciality.DOKTER_UMUM);
         updateProfileDto.setWorkAddress("New work address");
     }
 
@@ -165,7 +165,7 @@ class ProfileServiceImplTest {
     void updateUserProfileWhenUserIsPacilianShouldUpdateUserAndPacilianProfile() {
         User updatedUser = User.builder()
                 .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
+                .email(testUser.getEmail())
                 .password(testUser.getPassword())
                 .name(updateProfileDto.getName())
                 .nik(testUser.getNik())
@@ -175,7 +175,6 @@ class ProfileServiceImplTest {
                 .build();
 
         when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
         when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
 
@@ -183,7 +182,7 @@ class ProfileServiceImplTest {
 
         assertNotNull(result);
         assertEquals(updatedUser.getId(), result.getId());
-        assertEquals(updateProfileDto.getEmail(), result.getEmail());
+        assertEquals(testUser.getEmail(), result.getEmail());
         assertEquals(updateProfileDto.getName(), result.getName());
         assertEquals(updatedUser.getNik(), result.getNik());
         assertEquals(updateProfileDto.getAddress(), result.getAddress());
@@ -200,101 +199,6 @@ class ProfileServiceImplTest {
 
         User updatedUser = User.builder()
                 .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(caregiverRepository.findById(testUser.getId())).thenReturn(Optional.of(testCaregiver));
-
-        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
-
-        assertNotNull(result);
-        assertEquals(updatedUser.getId(), result.getId());
-        assertEquals(updateProfileDto.getEmail(), result.getEmail());
-        assertEquals(updateProfileDto.getName(), result.getName());
-        assertEquals(updatedUser.getNik(), result.getNik());
-        assertEquals(updateProfileDto.getAddress(), result.getAddress());
-        assertEquals(updateProfileDto.getPhoneNumber(), result.getPhoneNumber());
-        assertEquals(updatedUser.getRole(), result.getRole());
-        
-        verify(userRepository).save(any(User.class));
-        verify(caregiverRepository).save(any(Caregiver.class));
-    }
-
-    @Test
-    void updateUserProfileWhenEmailAlreadyExistsShouldThrowException() {
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(true);
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            profileService.updateUserProfile(updateProfileDto, authentication);
-        });
-    }
-
-    @Test
-    void updateUserProfileWhenEmailIsNullShouldNotUpdateEmail() {
-        updateProfileDto.setEmail(null);
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(testUser.getEmail()) 
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
-
-        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
-
-        assertEquals(testUser.getEmail(), result.getEmail());
-        verify(userRepository, never()).existsByEmail(any());
-    }
-
-    @Test
-    void updateUserProfileWhenEmailIsEmptyShouldNotUpdateEmail() {
-        updateProfileDto.setEmail("");
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(testUser.getEmail()) 
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
-
-        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
-
-        assertEquals(testUser.getEmail(), result.getEmail());
-        verify(userRepository, never()).existsByEmail(any());
-    }
-
-    @Test
-    void updateUserProfileWhenSameEmailShouldNotCheckExistence() {
-        updateProfileDto.setEmail(testUser.getEmail());
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
                 .email(testUser.getEmail())
                 .password(testUser.getPassword())
                 .name(updateProfileDto.getName())
@@ -306,138 +210,167 @@ class ProfileServiceImplTest {
 
         when(authentication.getPrincipal()).thenReturn(testUser);
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
+        when(caregiverRepository.findById(testUser.getId())).thenReturn(Optional.of(testCaregiver));
 
         UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
 
+        assertNotNull(result);
+        assertEquals(updatedUser.getId(), result.getId());
         assertEquals(testUser.getEmail(), result.getEmail());
-        verify(userRepository, never()).existsByEmail(any());
-    }
-
-    @Test
-    void updateUserProfileWhenPacilianWithNullMedicalHistoryShouldNotUpdateMedicalHistory() {
-        updateProfileDto.setMedicalHistory(null);
+        assertEquals(updateProfileDto.getName(), result.getName());
+        assertEquals(updatedUser.getNik(), result.getNik());
+        assertEquals(updateProfileDto.getAddress(), result.getAddress());
+        assertEquals(updateProfileDto.getPhoneNumber(), result.getPhoneNumber());
+        assertEquals(updatedUser.getRole(), result.getRole());
         
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
-
-        profileService.updateUserProfile(updateProfileDto, authentication);
-
-        verify(pacilianRepository, never()).save(any(Pacilian.class));
-    }
-
-    @Test
-    void updateUserProfileWhenCaregiverWithEmptySpecialityShouldNotUpdateSpeciality() {
-        testUser.setRole(Role.CAREGIVER);
-        updateProfileDto.setSpeciality("");
-        updateProfileDto.setWorkAddress("New Work Address");
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(caregiverRepository.findById(testUser.getId())).thenReturn(Optional.of(testCaregiver));
-
-        profileService.updateUserProfile(updateProfileDto, authentication);
-
+        verify(userRepository).save(any(User.class));
         verify(caregiverRepository).save(any(Caregiver.class));
     }
 
     @Test
-    void deleteUserAccountWhenUserIsPacilianShouldDeletePacilian() {
+    void updateUserProfileWhenNameNullShouldNotUpdateName() {
+        updateProfileDto.setName(null);
+        
+        User updatedUser = User.builder()
+                .id(testUser.getId())
+                .email(testUser.getEmail())
+                .password(testUser.getPassword())
+                .name(testUser.getName())
+                .nik(testUser.getNik())
+                .address(updateProfileDto.getAddress())
+                .phoneNumber(updateProfileDto.getPhoneNumber())
+                .role(testUser.getRole())
+                .build();
+                
         when(authentication.getPrincipal()).thenReturn(testUser);
-
-        profileService.deleteUserAccount(authentication);
-
-        verify(pacilianRepository).deleteById(testUser.getId());
-        verify(userRepository).deleteById(testUser.getId());
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
+        
+        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
+        
+        assertEquals(testUser.getName(), result.getName());
     }
 
     @Test
-    void deleteUserAccountWhenUserIsCaregiverShouldDeleteCaregiver() {
-        testUser.setRole(Role.CAREGIVER);
+    void updateUserProfileWhenNameEmptyShouldNotUpdateName() {
+        updateProfileDto.setName("");
+        
+        User updatedUser = User.builder()
+                .id(testUser.getId())
+                .email(testUser.getEmail())
+                .password(testUser.getPassword())
+                .name(testUser.getName())
+                .nik(testUser.getNik())
+                .address(updateProfileDto.getAddress())
+                .phoneNumber(updateProfileDto.getPhoneNumber())
+                .role(testUser.getRole())
+                .build();
+                
         when(authentication.getPrincipal()).thenReturn(testUser);
-
-        profileService.deleteUserAccount(authentication);
-
-        verify(caregiverRepository).deleteById(testUser.getId());
-        verify(userRepository).deleteById(testUser.getId());
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
+        
+        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
+        
+        assertEquals(testUser.getName(), result.getName());
     }
 
     @Test
-    void changePasswordWhenCurrentPasswordDoesNotMatchShouldThrowException() {
-        PasswordChangeDto passwordChangeDto = new PasswordChangeDto();
-        passwordChangeDto.setCurrentPassword("wrongPassword");
-        passwordChangeDto.setNewPassword("newPassword");
-        passwordChangeDto.setConfirmPassword("newPassword");
-
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), testUser.getPassword())).thenReturn(false);
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            profileService.changePassword(passwordChangeDto, authentication);
-        });
+    void updateUserProfileWhenAddressNullShouldNotUpdateAddress() {
+        updateProfileDto.setAddress(null);
         
-        verify(userRepository, never()).save(any());
+        User updatedUser = User.builder()
+                .id(testUser.getId())
+                .email(testUser.getEmail())
+                .password(testUser.getPassword())
+                .name(updateProfileDto.getName())
+                .nik(testUser.getNik())
+                .address(testUser.getAddress())
+                .phoneNumber(updateProfileDto.getPhoneNumber())
+                .role(testUser.getRole())
+                .build();
+                
+        when(authentication.getPrincipal()).thenReturn(testUser);
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
+        
+        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
+        
+        assertEquals(testUser.getAddress(), result.getAddress());
     }
 
     @Test
-    void changePasswordWhenNewPasswordAndConfirmPasswordDoNotMatchShouldThrowException() {
-        PasswordChangeDto passwordChangeDto = new PasswordChangeDto();
-        passwordChangeDto.setCurrentPassword("currentPassword");
-        passwordChangeDto.setNewPassword("newPassword");
-        passwordChangeDto.setConfirmPassword("differentPassword");
-
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), testUser.getPassword())).thenReturn(true);
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            profileService.changePassword(passwordChangeDto, authentication);
-        });
+    void updateUserProfileWhenAddressEmptyShouldNotUpdateAddress() {
+        updateProfileDto.setAddress("");
         
-        verify(userRepository, never()).save(any());
+        User updatedUser = User.builder()
+                .id(testUser.getId())
+                .email(testUser.getEmail())
+                .password(testUser.getPassword())
+                .name(updateProfileDto.getName())
+                .nik(testUser.getNik())
+                .address(testUser.getAddress())
+                .phoneNumber(updateProfileDto.getPhoneNumber())
+                .role(testUser.getRole())
+                .build();
+                
+        when(authentication.getPrincipal()).thenReturn(testUser);
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
+        
+        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
+        
+        assertEquals(testUser.getAddress(), result.getAddress());
     }
-    
+
     @Test
-    void changePasswordWhenValidShouldUpdatePassword() {
-        PasswordChangeDto passwordChangeDto = new PasswordChangeDto();
-        passwordChangeDto.setCurrentPassword("currentPassword");
-        passwordChangeDto.setNewPassword("newPassword");
-        passwordChangeDto.setConfirmPassword("newPassword");
+    void updateUserProfileWhenPhoneNumberNullShouldNotUpdatePhoneNumber() {
+        updateProfileDto.setPhoneNumber(null);
         
+        User updatedUser = User.builder()
+                .id(testUser.getId())
+                .email(testUser.getEmail())
+                .password(testUser.getPassword())
+                .name(updateProfileDto.getName())
+                .nik(testUser.getNik())
+                .address(updateProfileDto.getAddress())
+                .phoneNumber(testUser.getPhoneNumber())
+                .role(testUser.getRole())
+                .build();
+                
         when(authentication.getPrincipal()).thenReturn(testUser);
-        when(passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), testUser.getPassword())).thenReturn(true);
-        when(passwordEncoder.encode(passwordChangeDto.getNewPassword())).thenReturn("encoded-new-password");
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
         
-        profileService.changePassword(passwordChangeDto, authentication);
+        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
         
-        verify(userRepository).save(testUser);
-        assertEquals("encoded-new-password", testUser.getPassword());
+        assertEquals(testUser.getPhoneNumber(), result.getPhoneNumber());
     }
-    
+
+    @Test
+    void updateUserProfileWhenPhoneNumberEmptyShouldNotUpdatePhoneNumber() {
+        updateProfileDto.setPhoneNumber("");
+        
+        User updatedUser = User.builder()
+                .id(testUser.getId())
+                .email(testUser.getEmail())
+                .password(testUser.getPassword())
+                .name(updateProfileDto.getName())
+                .nik(testUser.getNik())
+                .address(updateProfileDto.getAddress())
+                .phoneNumber(testUser.getPhoneNumber())
+                .role(testUser.getRole())
+                .build();
+                
+        when(authentication.getPrincipal()).thenReturn(testUser);
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
+        
+        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
+        
+        assertEquals(testUser.getPhoneNumber(), result.getPhoneNumber());
+    }
+
     @Test
     void updateUserProfileWithOnlyNameShouldOnlyUpdateName() {
         UpdateProfileDto nameOnlyDto = new UpdateProfileDto();
@@ -530,7 +463,7 @@ class ProfileServiceImplTest {
         
         User updatedUser = User.builder()
                 .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
+                .email(testUser.getEmail())
                 .password(testUser.getPassword())
                 .name(updateProfileDto.getName())
                 .nik(testUser.getNik())
@@ -540,7 +473,6 @@ class ProfileServiceImplTest {
                 .build();
 
         when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
         when(caregiverRepository.findById(testUser.getId())).thenReturn(Optional.of(testCaregiver));
 
@@ -552,12 +484,12 @@ class ProfileServiceImplTest {
     @Test
     void updateUserProfileWhenCaregiverWithNullWorkAddressShouldNotUpdateWorkAddress() {
         testUser.setRole(Role.CAREGIVER);
-        updateProfileDto.setSpeciality("New Speciality");
+        updateProfileDto.setSpeciality(Speciality.DOKTER_UMUM);
         updateProfileDto.setWorkAddress(null);
         
         User updatedUser = User.builder()
                 .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
+                .email(testUser.getEmail())
                 .password(testUser.getPassword())
                 .name(updateProfileDto.getName())
                 .nik(testUser.getNik())
@@ -567,7 +499,6 @@ class ProfileServiceImplTest {
                 .build();
 
         when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
         when(caregiverRepository.findById(testUser.getId())).thenReturn(Optional.of(testCaregiver));
 
@@ -584,7 +515,7 @@ class ProfileServiceImplTest {
         
         User updatedUser = User.builder()
                 .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
+                .email(testUser.getEmail())
                 .password(testUser.getPassword())
                 .name(updateProfileDto.getName())
                 .nik(testUser.getNik())
@@ -594,39 +525,11 @@ class ProfileServiceImplTest {
                 .build();
 
         when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
         when(caregiverRepository.findById(testUser.getId())).thenReturn(Optional.of(testCaregiver));
 
         profileService.updateUserProfile(updateProfileDto, authentication);
         verify(caregiverRepository, never()).save(any(Caregiver.class));
-    }
-
-    @Test
-    void updateUserProfileWhenBothSpecialityAndWorkAddressEmptyShouldNotSaveCaregiver() {
-        testUser.setRole(Role.CAREGIVER);
-        updateProfileDto.setSpeciality("");
-        updateProfileDto.setWorkAddress("");
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(caregiverRepository.findById(testUser.getId())).thenReturn(Optional.of(testCaregiver));
-
-        profileService.updateUserProfile(updateProfileDto, authentication);
-
-        verify(caregiverRepository).save(any(Caregiver.class));
     }
 
     @Test
@@ -648,153 +551,27 @@ class ProfileServiceImplTest {
     }
 
     @Test
-    void updateUserProfileWhenNameNullShouldNotUpdateName() {
-        updateProfileDto.setName(null);
+    void updateUserProfileWhenPacilianWithNullMedicalHistoryShouldNotUpdateMedicalHistory() {
+        updateProfileDto.setMedicalHistory(null);
         
         User updatedUser = User.builder()
                 .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
+                .email(testUser.getEmail())
                 .password(testUser.getPassword())
-                .name(testUser.getName())
+                .name(updateProfileDto.getName())
                 .nik(testUser.getNik())
                 .address(updateProfileDto.getAddress())
                 .phoneNumber(updateProfileDto.getPhoneNumber())
                 .role(testUser.getRole())
                 .build();
-                
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
-        
-        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
-        
-        assertEquals(testUser.getName(), result.getName());
-    }
 
-    @Test
-    void updateUserProfileWhenNameEmptyShouldNotUpdateName() {
-        updateProfileDto.setName("");
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
-                .password(testUser.getPassword())
-                .name(testUser.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-                
         when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
         when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
-        
-        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
-        
-        assertEquals(testUser.getName(), result.getName());
-    }
 
-    @Test
-    void updateUserProfileWhenAddressNullShouldNotUpdateAddress() {
-        updateProfileDto.setAddress(null);
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(testUser.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-                
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
-        
-        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
-        
-        assertEquals(testUser.getAddress(), result.getAddress());
-        }
+        profileService.updateUserProfile(updateProfileDto, authentication);
 
-        @Test
-        void updateUserProfileWhenAddressEmptyShouldNotUpdateAddress() {
-        updateProfileDto.setAddress("");
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(testUser.getAddress())
-                .phoneNumber(updateProfileDto.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-                
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
-        
-        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
-        
-        assertEquals(testUser.getAddress(), result.getAddress());
-    }
-
-    @Test
-    void updateUserProfileWhenPhoneNumberNullShouldNotUpdatePhoneNumber() {
-        updateProfileDto.setPhoneNumber(null);
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(testUser.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-                
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
-        
-        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
-        
-        assertEquals(testUser.getPhoneNumber(), result.getPhoneNumber());
-    }
-
-    @Test
-    void updateUserProfileWhenPhoneNumberEmptyShouldNotUpdatePhoneNumber() {
-        updateProfileDto.setPhoneNumber("");
-        
-        User updatedUser = User.builder()
-                .id(testUser.getId())
-                .email(updateProfileDto.getEmail())
-                .password(testUser.getPassword())
-                .name(updateProfileDto.getName())
-                .nik(testUser.getNik())
-                .address(updateProfileDto.getAddress())
-                .phoneNumber(testUser.getPhoneNumber())
-                .role(testUser.getRole())
-                .build();
-                
-        when(authentication.getPrincipal()).thenReturn(testUser);
-        when(userRepository.existsByEmail(updateProfileDto.getEmail())).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
-        when(pacilianRepository.findById(testUser.getId())).thenReturn(Optional.of(testPacilian));
-        
-        UserProfileDto result = profileService.updateUserProfile(updateProfileDto, authentication);
-        
-        assertEquals(testUser.getPhoneNumber(), result.getPhoneNumber());
+        verify(pacilianRepository, never()).save(any(Pacilian.class));
     }
 
     @Test
@@ -820,5 +597,77 @@ class ProfileServiceImplTest {
         
         verify(userRepository).save(any(User.class));
         verify(pacilianRepository, never()).save(any(Pacilian.class));
+    }
+
+    @Test
+    void deleteUserAccountWhenUserIsPacilianShouldDeletePacilian() {
+        when(authentication.getPrincipal()).thenReturn(testUser);
+
+        profileService.deleteUserAccount(authentication);
+
+        verify(pacilianRepository).deleteById(testUser.getId());
+        verify(userRepository).deleteById(testUser.getId());
+    }
+
+    @Test
+    void deleteUserAccountWhenUserIsCaregiverShouldDeleteCaregiver() {
+        testUser.setRole(Role.CAREGIVER);
+        when(authentication.getPrincipal()).thenReturn(testUser);
+
+        profileService.deleteUserAccount(authentication);
+
+        verify(caregiverRepository).deleteById(testUser.getId());
+        verify(userRepository).deleteById(testUser.getId());
+    }
+
+    @Test
+    void changePasswordWhenCurrentPasswordDoesNotMatchShouldThrowException() {
+        PasswordChangeDto passwordChangeDto = new PasswordChangeDto();
+        passwordChangeDto.setCurrentPassword("wrongPassword");
+        passwordChangeDto.setNewPassword("newPassword");
+        passwordChangeDto.setConfirmPassword("newPassword");
+
+        when(authentication.getPrincipal()).thenReturn(testUser);
+        when(passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), testUser.getPassword())).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            profileService.changePassword(passwordChangeDto, authentication);
+        });
+        
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void changePasswordWhenNewPasswordAndConfirmPasswordDoNotMatchShouldThrowException() {
+        PasswordChangeDto passwordChangeDto = new PasswordChangeDto();
+        passwordChangeDto.setCurrentPassword("currentPassword");
+        passwordChangeDto.setNewPassword("newPassword");
+        passwordChangeDto.setConfirmPassword("differentPassword");
+
+        when(authentication.getPrincipal()).thenReturn(testUser);
+        when(passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), testUser.getPassword())).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            profileService.changePassword(passwordChangeDto, authentication);
+        });
+        
+        verify(userRepository, never()).save(any());
+    }
+    
+    @Test
+    void changePasswordWhenValidShouldUpdatePassword() {
+        PasswordChangeDto passwordChangeDto = new PasswordChangeDto();
+        passwordChangeDto.setCurrentPassword("currentPassword");
+        passwordChangeDto.setNewPassword("newPassword");
+        passwordChangeDto.setConfirmPassword("newPassword");
+        
+        when(authentication.getPrincipal()).thenReturn(testUser);
+        when(passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), testUser.getPassword())).thenReturn(true);
+        when(passwordEncoder.encode(passwordChangeDto.getNewPassword())).thenReturn("encoded-new-password");
+        
+        profileService.changePassword(passwordChangeDto, authentication);
+        
+        verify(userRepository).save(testUser);
+        assertEquals("encoded-new-password", testUser.getPassword());
     }
 }

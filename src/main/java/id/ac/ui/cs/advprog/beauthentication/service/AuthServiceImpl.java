@@ -2,10 +2,12 @@ package id.ac.ui.cs.advprog.beauthentication.service;
 
 import id.ac.ui.cs.advprog.beauthentication.dto.*;
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality;
 import id.ac.ui.cs.advprog.beauthentication.model.*;
 import id.ac.ui.cs.advprog.beauthentication.repository.CaregiverRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.PacilianRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -104,12 +106,14 @@ public class AuthServiceImpl implements AuthService {
     }
     
     private Caregiver createCaregiverEntity(RegisterCaregiverDto registerDto) {
+        Speciality.validatespeciality(registerDto.getSpeciality());
+        
         return Caregiver.builder()
                 .email(registerDto.getEmail())
                 .password(passwordEncoder.encode(registerDto.getPassword()))
                 .name(registerDto.getName())
                 .nik(registerDto.getNik())
-                .address(registerDto.getWorkAddress())
+                .address(registerDto.getAddress())
                 .workAddress(registerDto.getWorkAddress())
                 .phoneNumber(registerDto.getPhoneNumber())
                 .speciality(registerDto.getSpeciality())
@@ -174,5 +178,15 @@ public class AuthServiceImpl implements AuthService {
         return TokenVerificationResponseDto.builder()
                 .valid(false)
                 .build();
+    }
+
+    public Caregiver getCaregiverByID(String id) {
+    return caregiverRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Caregiver with ID " + id + " not found"));
+    }
+
+    public Pacilian getPacilianByID(String id) {
+        return pacilianRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pacilian with ID " + id + " not found"));
     }
 }

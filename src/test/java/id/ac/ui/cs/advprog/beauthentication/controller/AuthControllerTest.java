@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.beauthentication.controller;
 
 import id.ac.ui.cs.advprog.beauthentication.dto.*;
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality; 
 import id.ac.ui.cs.advprog.beauthentication.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,7 +96,7 @@ class AuthControllerTest {
                     .nik("1234567890123456")
                     .workAddress("Work Address")
                     .phoneNumber("1234567890")
-                    .speciality("Cardiology")
+                    .speciality(Speciality.DOKTER_UMUM) 
                     .build();
         }
 
