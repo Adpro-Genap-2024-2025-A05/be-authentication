@@ -7,10 +7,13 @@ import id.ac.ui.cs.advprog.beauthentication.model.*;
 import id.ac.ui.cs.advprog.beauthentication.repository.CaregiverRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.PacilianRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.UserRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,38 +32,70 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     
+    private final Counter loginSuccessCounter;
+    private final Counter loginFailureCounter;
+    private final Counter registerPacilianCounter;
+    private final Counter registerCaregiverCounter;
+    private final Counter registerPacilianFailureCounter;
+    private final Counter registerCaregiverFailureCounter;
+    private final Timer tokenVerificationTimer;
+    
     private static final String REGISTRATION_SUCCESS_MESSAGE = "Registration successful. Please login.";
 
     @Override
     @Transactional
     public RegisterResponseDto registerPacilian(RegisterPacilianDto registerDto) {
-        validateRegistration(registerDto.getEmail(), registerDto.getNik());
+        try {
+            validateRegistration(registerDto.getEmail(), registerDto.getNik());
 
-        Pacilian pacilian = createPacilianEntity(registerDto);
-        Pacilian savedPacilian = pacilianRepository.save(pacilian);
+            Pacilian pacilian = createPacilianEntity(registerDto);
+            Pacilian savedPacilian = pacilianRepository.save(pacilian);
 
-        return buildRegisterResponse(savedPacilian.getId(), savedPacilian.getRole());
+            registerPacilianCounter.increment();
+
+            return buildRegisterResponse(savedPacilian.getId(), savedPacilian.getRole());
+        } catch (Exception e) {
+            registerPacilianFailureCounter.increment();
+            throw e;
+        }
     }
 
     @Override
     @Transactional
     public RegisterResponseDto registerCaregiver(RegisterCaregiverDto registerDto) {
-        validateRegistration(registerDto.getEmail(), registerDto.getNik());
+        try {
+            validateRegistration(registerDto.getEmail(), registerDto.getNik());
 
-        Caregiver caregiver = createCaregiverEntity(registerDto);
-        
-        Caregiver savedCaregiver = caregiverRepository.save(caregiver);
+            Caregiver caregiver = createCaregiverEntity(registerDto);
+            
+            Caregiver savedCaregiver = caregiverRepository.save(caregiver);
 
-        return buildRegisterResponse(savedCaregiver.getId(), savedCaregiver.getRole());
+            registerCaregiverCounter.increment();
+
+            return buildRegisterResponse(savedCaregiver.getId(), savedCaregiver.getRole());
+        } catch (Exception e) {
+            registerCaregiverFailureCounter.increment();
+            throw e;
+        }
     }
 
     @Override
     public LoginResponseDto login(LoginDto loginDto) {
-        Authentication authentication = authenticateUser(loginDto);
-        User user = (User) authentication.getPrincipal();
-        String jwtToken = jwtService.generateToken(user);
+        try {
+            Authentication authentication = authenticateUser(loginDto);
+            User user = (User) authentication.getPrincipal();
+            String jwtToken = jwtService.generateToken(user);
 
-        return buildLoginResponse(user, jwtToken);
+            loginSuccessCounter.increment();
+
+            return buildLoginResponse(user, jwtToken);
+        } catch (BadCredentialsException | UsernameNotFoundException e) {
+            loginFailureCounter.increment();
+            throw e;
+        } catch (Exception e) {
+            loginFailureCounter.increment();
+            throw e;
+        }
     }
 
     @Override
@@ -71,12 +106,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public TokenVerificationResponseDto verifyToken(String token) {
         try {
-            String userEmail = jwtService.extractUsername(token);
-            if (userEmail == null) {
-                return buildInvalidTokenResponse();
-            }
+            return tokenVerificationTimer.recordCallable(() -> {
+                try {
+                    String userEmail = jwtService.extractUsername(token);
+                    if (userEmail == null) {
+                        return buildInvalidTokenResponse();
+                    }
 
-            return verifyTokenForUser(token, userEmail);
+                    return verifyTokenForUser(token, userEmail);
+                } catch (Exception e) {
+                    return buildInvalidTokenResponse();
+                }
+            });
         } catch (Exception e) {
             return buildInvalidTokenResponse();
         }
@@ -181,8 +222,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public Caregiver getCaregiverByID(String id) {
-    return caregiverRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Caregiver with ID " + id + " not found"));
+        return caregiverRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Caregiver with ID " + id + " not found"));
     }
 
     public Pacilian getPacilianByID(String id) {

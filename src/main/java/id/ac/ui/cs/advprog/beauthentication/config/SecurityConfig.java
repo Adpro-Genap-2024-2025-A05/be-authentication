@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/data/**").permitAll()
                         .requestMatchers("/profile/**").authenticated()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/auth/caregiver/**").permitAll()
                         .requestMatchers("/pacilian/**").permitAll()
                         .anyRequest().authenticated())
