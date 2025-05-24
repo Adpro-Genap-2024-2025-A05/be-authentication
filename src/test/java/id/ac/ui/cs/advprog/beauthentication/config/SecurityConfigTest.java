@@ -37,9 +37,9 @@ class SecurityConfigTest {
     @Test
     void publicEndpointsAreAccessibleWithoutAuthentication() throws Exception {
         performGetRequestAndExpectOkStatus("/api");
-        performGetRequestAndExpectOkStatus("/api/register/pacilian");
-        performGetRequestAndExpectOkStatus("/api/login");
-        performGetRequestAndExpectOkStatus("/api/verify");
+        performGetRequestAndExpectOkStatus("/api/auth/register/pacilian");
+        performGetRequestAndExpectOkStatus("/api/auth/login");
+        performGetRequestAndExpectOkStatus("/api/auth/verify");
         performGetRequestAndExpectOkStatus("/error");
     }
 
@@ -72,12 +72,12 @@ class SecurityConfigTest {
 
     @Test
     void csrfIsDisabled() throws Exception {
-        performGetRequestAndExpectOkStatus("/api/login");
+        performGetRequestAndExpectOkStatus("/api/auth/login");
     }
 
     @Test
     void logoutReturnsSuccessStatusAndJsonResponse() throws Exception {
-        mockMvc.perform(post("/api/logout")
+        mockMvc.perform(post("/api/auth/logout")
                 .with(SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
