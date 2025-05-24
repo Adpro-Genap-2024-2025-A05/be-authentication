@@ -33,21 +33,21 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/").permitAll()
-                        .requestMatchers("/auth/register/**").permitAll()
-                        .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/auth/verify").permitAll()
-                        .requestMatchers("/data/**").permitAll()
-                        .requestMatchers("/profile/**").authenticated()
+                        .requestMatchers("/api").permitAll()
+                        .requestMatchers("/api/auth/register/**").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/verify").permitAll()
+                        .requestMatchers("/api/data/**").permitAll()
+                        .requestMatchers("/api/profile/**").authenticated()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/auth/caregiver/**").permitAll()
-                        .requestMatchers("/pacilian/**").permitAll()
+                        .requestMatchers("/api/auth/caregiver/**").permitAll()
+                        .requestMatchers("/api/pacilian/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
+                        .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setContentType("application/json");
                             response.setStatus(HttpServletResponse.SC_OK);
