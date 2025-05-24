@@ -11,6 +11,8 @@ import id.ac.ui.cs.advprog.beauthentication.model.User;
 import id.ac.ui.cs.advprog.beauthentication.repository.CaregiverRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.PacilianRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.UserRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -25,89 +27,130 @@ public class ProfileServiceImpl implements ProfileService {
     private final PacilianRepository pacilianRepository;
     private final CaregiverRepository caregiverRepository;
     private final PasswordEncoder passwordEncoder;
+    
+    private final Counter profileViewCounter;
+    private final Counter profileUpdateSuccessCounter;
+    private final Counter profileUpdateFailureCounter;
+    private final Counter passwordChangeSuccessCounter;
+    private final Counter passwordChangeFailureCounter;
+    private final Timer profileUpdateTimer;
 
     @Override
     public UserProfileDto getUserProfile(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        try {
+            User user = (User) authentication.getPrincipal();
 
-        if (user.getRole() == Role.CAREGIVER) {
-            Caregiver caregiver = caregiverRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalStateException("Caregiver not found"));
-            return buildUserProfileDto(caregiver);
-        } else if (user.getRole() == Role.PACILIAN) {
-            Pacilian pacilian = pacilianRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalStateException("Pacilian not found"));
-            return buildUserProfileDto(pacilian);
-        } else {
-            return buildUserProfileDto(user);
+            profileViewCounter.increment();
+
+            if (user.getRole() == Role.CAREGIVER) {
+                Caregiver caregiver = caregiverRepository.findById(user.getId())
+                    .orElseThrow(() -> new IllegalStateException("Caregiver not found"));
+                return buildUserProfileDto(caregiver);
+            } else if (user.getRole() == Role.PACILIAN) {
+                Pacilian pacilian = pacilianRepository.findById(user.getId())
+                    .orElseThrow(() -> new IllegalStateException("Pacilian not found"));
+                return buildUserProfileDto(pacilian);
+            } else {
+                return buildUserProfileDto(user);
+            }
+        } catch (Exception e) {
+            throw e;
         }
     }
 
     @Override
     @Transactional
     public UserProfileDto updateUserProfile(UpdateProfileDto updateProfileDto, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        Timer.Sample sample = Timer.start();
+        
+        try {
+            User user = (User) authentication.getPrincipal();
 
-        if (updateProfileDto.getName() != null && !updateProfileDto.getName().isEmpty()) {
-            user.setName(updateProfileDto.getName());
-        }
-
-        if (updateProfileDto.getAddress() != null && !updateProfileDto.getAddress().isEmpty()) {
-            user.setAddress(updateProfileDto.getAddress());
-        }
-
-        if (updateProfileDto.getPhoneNumber() != null && !updateProfileDto.getPhoneNumber().isEmpty()) {
-            user.setPhoneNumber(updateProfileDto.getPhoneNumber());
-        }
-
-        userRepository.save(user);
-
-        if (user.getRole() == Role.PACILIAN) {
-            Pacilian pacilian = pacilianRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalStateException("Pacilian not found"));
-
-            if (updateProfileDto.getMedicalHistory() != null) {
-                pacilian.setMedicalHistory(updateProfileDto.getMedicalHistory());
+            if (updateProfileDto.getName() != null && !updateProfileDto.getName().isEmpty()) {
+                user.setName(updateProfileDto.getName());
             }
 
-            pacilianRepository.save(pacilian);
-            return buildUserProfileDto(pacilian);
-
-        } else if (user.getRole() == Role.CAREGIVER) {
-            Caregiver caregiver = caregiverRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalStateException("Caregiver not found"));
-
-            if (updateProfileDto.getSpeciality() != null) {
-                Speciality.validatespeciality(updateProfileDto.getSpeciality());
-                caregiver.setSpeciality(updateProfileDto.getSpeciality());
+            if (updateProfileDto.getAddress() != null && !updateProfileDto.getAddress().isEmpty()) {
+                user.setAddress(updateProfileDto.getAddress());
             }
 
-            if (updateProfileDto.getWorkAddress() != null && !updateProfileDto.getWorkAddress().isEmpty()) {
-                caregiver.setWorkAddress(updateProfileDto.getWorkAddress());
+            if (updateProfileDto.getPhoneNumber() != null && !updateProfileDto.getPhoneNumber().isEmpty()) {
+                user.setPhoneNumber(updateProfileDto.getPhoneNumber());
             }
 
-            caregiverRepository.save(caregiver);
-            return buildUserProfileDto(caregiver);
+            userRepository.save(user);
+
+            UserProfileDto result;
+            
+            if (user.getRole() == Role.PACILIAN) {
+                Pacilian pacilian = pacilianRepository.findById(user.getId())
+                    .orElseThrow(() -> new IllegalStateException("Pacilian not found"));
+
+                if (updateProfileDto.getMedicalHistory() != null) {
+                    pacilian.setMedicalHistory(updateProfileDto.getMedicalHistory());
+                }
+
+                pacilianRepository.save(pacilian);
+                result = buildUserProfileDto(pacilian);
+
+            } else if (user.getRole() == Role.CAREGIVER) {
+                Caregiver caregiver = caregiverRepository.findById(user.getId())
+                    .orElseThrow(() -> new IllegalStateException("Caregiver not found"));
+
+                if (updateProfileDto.getSpeciality() != null) {
+                    Speciality.validatespeciality(updateProfileDto.getSpeciality());
+                    caregiver.setSpeciality(updateProfileDto.getSpeciality());
+                }
+
+                if (updateProfileDto.getWorkAddress() != null && !updateProfileDto.getWorkAddress().isEmpty()) {
+                    caregiver.setWorkAddress(updateProfileDto.getWorkAddress());
+                }
+
+                caregiverRepository.save(caregiver);
+                result = buildUserProfileDto(caregiver);
+            } else {
+                result = buildUserProfileDto(user);
+            }
+
+            profileUpdateSuccessCounter.increment();
+            sample.stop(profileUpdateTimer);
+            
+            return result;
+            
+        } catch (Exception e) {
+            profileUpdateFailureCounter.increment();
+            sample.stop(profileUpdateTimer);
+            throw e;
         }
-
-        return buildUserProfileDto(user);
     }
 
     @Override
     @Transactional
     public void changePassword(PasswordChangeDto passwordChangeDto, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        try {
+            User user = (User) authentication.getPrincipal();
 
-        if (!passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Current password is incorrect");
+            if (!passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), user.getPassword())) {
+                passwordChangeFailureCounter.increment();
+                throw new IllegalArgumentException("Current password is incorrect");
+            }
+
+            if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
+                passwordChangeFailureCounter.increment();
+                throw new IllegalArgumentException("New password and confirm password do not match");
+            }
+
+            user.setPassword(passwordEncoder.encode(passwordChangeDto.getNewPassword()));
+            userRepository.save(user);
+            
+            passwordChangeSuccessCounter.increment();
+            
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            passwordChangeFailureCounter.increment();
+            throw e;
         }
-
-        if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
-            throw new IllegalArgumentException("New password and confirm password do not match");
-        }
-
-        user.setPassword(passwordEncoder.encode(passwordChangeDto.getNewPassword()));
-        userRepository.save(user);
     }
 
     private UserProfileDto buildUserProfileDto(Caregiver caregiver) {

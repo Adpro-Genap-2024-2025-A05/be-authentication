@@ -7,6 +7,8 @@ import id.ac.ui.cs.advprog.beauthentication.model.Caregiver;
 import id.ac.ui.cs.advprog.beauthentication.model.Pacilian;
 import id.ac.ui.cs.advprog.beauthentication.repository.CaregiverRepository;
 import id.ac.ui.cs.advprog.beauthentication.repository.PacilianRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,35 +20,94 @@ import java.util.stream.Collectors;
 public class DataService {
     private final PacilianRepository pacilianRepository;
     private final CaregiverRepository caregiverRepository;
+    
+    private final Counter dataRequestCounter;
+    private final Counter caregiverSearchCounter;
+    private final Counter caregiverViewCounter;
+    private final Counter pacilianViewCounter;
+    private final Timer dataQueryTimer;
+    
+    private final Counter dataRequestFailureCounter;
+    private final Counter caregiverNotFoundCounter;
+    private final Counter pacilianNotFoundCounter;
 
     public List<CaregiverPublicDto> getAllActiveCaregivers() {
-        return caregiverRepository.findAll()
-                .stream()
-                .map(this::convertToPublicDtoCaregiver)
-                .collect(Collectors.toList());
+        try {
+            return dataQueryTimer.recordCallable(() -> {
+                dataRequestCounter.increment();
+                
+                return caregiverRepository.findAll()
+                        .stream()
+                        .map(this::convertToPublicDtoCaregiver)
+                        .collect(Collectors.toList());
+            });
+        } catch (Exception e) {
+            dataRequestFailureCounter.increment();
+            throw new RuntimeException(e);
+        }
     }
 
     public List<CaregiverPublicDto> searchCaregivers(String name, Speciality speciality) {
-        List<Caregiver> caregivers = caregiverRepository.findAll();
-        
-        return caregivers.stream()
-                .filter(caregiver -> matchesSearchCriteria(caregiver, name, speciality))
-                .map(this::convertToPublicDtoCaregiver)
-                .collect(Collectors.toList());
+        try {
+            return dataQueryTimer.recordCallable(() -> {
+                caregiverSearchCounter.increment();
+                dataRequestCounter.increment();
+
+                List<Caregiver> caregivers = caregiverRepository.findAll();
+
+                return caregivers.stream()
+                        .filter(caregiver -> matchesSearchCriteria(caregiver, name, speciality))
+                        .map(this::convertToPublicDtoCaregiver)
+                        .collect(Collectors.toList());
+            });
+        } catch (Exception e) {
+            dataRequestFailureCounter.increment();
+            throw new RuntimeException(e);
+        }
     }
 
     public CaregiverPublicDto getCaregiverById(String id) {
-        Caregiver caregiver = caregiverRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Caregiver not found with id: " + id));
-        
-        return convertToPublicDtoCaregiver(caregiver);
+        try {
+            return dataQueryTimer.recordCallable(() -> {
+                caregiverViewCounter.increment();
+                dataRequestCounter.increment();
+                
+                Caregiver caregiver = caregiverRepository.findById(id)
+                        .orElseThrow(() -> {
+                            caregiverNotFoundCounter.increment();
+                            return new IllegalArgumentException("Caregiver not found with id: " + id);
+                        });
+                
+                return convertToPublicDtoCaregiver(caregiver);
+            });
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            dataRequestFailureCounter.increment();
+            throw new RuntimeException(e);
+        }
     }
 
     public PacilianPublicDto getPacilianById(String id) {
-        Pacilian pacilian = pacilianRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pacilian not found with id: " + id));
-        
-        return convertToPublicDtoPacilian(pacilian);
+        try {
+            return dataQueryTimer.recordCallable(() -> {
+                pacilianViewCounter.increment();
+                dataRequestCounter.increment();
+                
+                Pacilian pacilian = pacilianRepository.findById(id)
+                        .orElseThrow(() -> {
+                            pacilianNotFoundCounter.increment();
+                            return new IllegalArgumentException("Pacilian not found with id: " + id);
+                        });
+                
+                return convertToPublicDtoPacilian(pacilian);
+            });
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            dataRequestFailureCounter.increment();
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean matchesSearchCriteria(Caregiver caregiver, String name, Speciality speciality) {
