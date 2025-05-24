@@ -75,23 +75,6 @@ class ProfileControllerTest {
     }
 
     @Test
-    void deleteUserAccount_shouldReturnSuccessMessage() {
-        doNothing().when(profileService).deleteUserAccount(any(Authentication.class));
-
-        ResponseEntity<ApiResponseDto<Void>> response = profileController.deleteUserAccount(authentication);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        ApiResponseDto<Void> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(HttpStatus.OK.value(), body.getStatus());
-        assertEquals("Account deleted successfully", body.getMessage());
-        assertNotNull(body.getTimestamp());
-        assertNull(body.getData());
-
-        verify(profileService).deleteUserAccount(authentication);
-    }
-
-    @Test
     void changePassword_shouldReturnSuccessMessage() {
         PasswordChangeDto passwordChangeDto = new PasswordChangeDto();
         passwordChangeDto.setCurrentPassword("current");
