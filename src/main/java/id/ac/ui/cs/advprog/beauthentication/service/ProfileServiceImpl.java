@@ -95,20 +95,6 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public void deleteUserAccount(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-
-        if (user.getRole() == Role.PACILIAN) {
-            pacilianRepository.deleteById(user.getId());
-        } else if (user.getRole() == Role.CAREGIVER) {
-            caregiverRepository.deleteById(user.getId());
-        }
-
-        userRepository.deleteById(user.getId());
-    }
-
-    @Override
-    @Transactional
     public void changePassword(PasswordChangeDto passwordChangeDto, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
 

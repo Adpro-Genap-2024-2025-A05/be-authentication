@@ -36,15 +36,6 @@ public class ProfileController {
                                 "Profile updated successfully",
                                 updatedProfile));
     }
-
-    @DeleteMapping("")
-    public ResponseEntity<ApiResponseDto<Void>> deleteUserAccount(Authentication authentication) {
-        profileService.deleteUserAccount(authentication);
-        return ResponseEntity.ok(
-                ApiResponseDto.success(HttpStatus.OK.value(),
-                                "Account deleted successfully",
-                                null));
-    }
     
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponseDto<Void>> changePassword(
