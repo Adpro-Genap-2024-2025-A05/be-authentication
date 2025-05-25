@@ -255,7 +255,6 @@ public class GlobalExceptionHandler {
                         Exception ex, WebRequest request) {
 
                 System.err.println("Unhandled exception: " + ex.getMessage());
-                ex.printStackTrace();
 
                 ErrorResponse errorResponse = ErrorResponse.builder()
                                 .timestamp(LocalDateTime.now())
