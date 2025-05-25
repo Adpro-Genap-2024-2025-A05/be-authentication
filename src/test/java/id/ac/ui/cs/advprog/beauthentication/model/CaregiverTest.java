@@ -1,11 +1,9 @@
 package id.ac.ui.cs.advprog.beauthentication.model;
 
 import id.ac.ui.cs.advprog.beauthentication.enums.Role;
+import id.ac.ui.cs.advprog.beauthentication.enums.Speciality; 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.time.DayOfWeek;
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,10 +23,8 @@ class CaregiverTest {
             assertEquals("Home Address", caregiver.getAddress());
             assertEquals("Work Address", caregiver.getWorkAddress());
             assertEquals("1234567890", caregiver.getPhoneNumber());
-            assertEquals("Cardiology", caregiver.getSpeciality());
+            assertEquals(Speciality.DOKTER_UMUM, caregiver.getSpeciality()); 
             assertEquals(Role.CAREGIVER, caregiver.getRole());
-            assertNotNull(caregiver.getWorkingSchedules());
-            assertTrue(caregiver.getWorkingSchedules().isEmpty());
         }
     }
 
@@ -38,9 +34,9 @@ class CaregiverTest {
         void specialityGetterAndSetterWorkCorrectly() {
             Caregiver caregiver = new Caregiver();
 
-            caregiver.setSpeciality("Neurology");
+            caregiver.setSpeciality(Speciality.SPESIALIS_ANAK); 
 
-            assertEquals("Neurology", caregiver.getSpeciality());
+            assertEquals(Speciality.SPESIALIS_ANAK, caregiver.getSpeciality()); 
         }
 
         @Test
@@ -84,74 +80,6 @@ class CaregiverTest {
     }
 
     @Nested
-    class WorkingScheduleTests {
-        @Test
-        void workingSchedulesDefaultToEmptyList() {
-            Caregiver caregiver = new Caregiver();
-
-            assertNotNull(caregiver.getWorkingSchedules());
-            assertTrue(caregiver.getWorkingSchedules().isEmpty());
-        }
-
-        @Test
-        void addWorkingScheduleAddsScheduleAndSetsCaregiver() {
-            Caregiver caregiver = new Caregiver();
-            WorkingSchedule schedule = createSchedule(DayOfWeek.MONDAY);
-
-            caregiver.addWorkingSchedule(schedule);
-
-            assertEquals(1, caregiver.getWorkingSchedules().size());
-            assertEquals(schedule, caregiver.getWorkingSchedules().get(0));
-            assertEquals(caregiver, schedule.getCaregiver());
-        }
-
-        @Test
-        void addWorkingScheduleHandlesNullSchedule() {
-            Caregiver caregiver = new Caregiver();
-
-            caregiver.addWorkingSchedule(null);
-
-            assertTrue(caregiver.getWorkingSchedules().isEmpty());
-        }
-
-        @Test
-        void removeWorkingScheduleRemovesScheduleAndNullsCaregiver() {
-            Caregiver caregiver = new Caregiver();
-            WorkingSchedule schedule = createSchedule(DayOfWeek.MONDAY);
-
-            caregiver.addWorkingSchedule(schedule);
-            caregiver.removeWorkingSchedule(schedule);
-
-            assertTrue(caregiver.getWorkingSchedules().isEmpty());
-            assertNull(schedule.getCaregiver());
-        }
-
-        @Test
-        void removeWorkingScheduleHandlesNullSchedule() {
-            Caregiver caregiver = new Caregiver();
-            WorkingSchedule schedule = createSchedule(DayOfWeek.MONDAY);
-            caregiver.addWorkingSchedule(schedule);
-
-            caregiver.removeWorkingSchedule(null);
-
-            assertEquals(1, caregiver.getWorkingSchedules().size());
-        }
-
-        @Test
-        void removeWorkingScheduleHandlesNonExistentSchedule() {
-            Caregiver caregiver = new Caregiver();
-            WorkingSchedule schedule1 = createSchedule(DayOfWeek.MONDAY);
-            WorkingSchedule schedule2 = createSchedule(DayOfWeek.TUESDAY);
-
-            caregiver.addWorkingSchedule(schedule1);
-            caregiver.removeWorkingSchedule(schedule2);
-
-            assertEquals(1, caregiver.getWorkingSchedules().size());
-            assertEquals(schedule1, caregiver.getWorkingSchedules().get(0));
-        }
-    }
-
-    @Nested
     class EqualsHashCodeTests {
         @Test
         void equalsReturnsTrueForSameId() {
@@ -173,12 +101,12 @@ class CaregiverTest {
         void hashCodeReturnsSameValueForEqualObjects() {
             Caregiver caregiver1 = Caregiver.builder()
                     .id("caregiver-id")
-                    .speciality("Cardiology")
+                    .speciality(Speciality.SPESIALIS_KULIT) 
                     .build();
 
             Caregiver caregiver2 = Caregiver.builder()
                     .id("caregiver-id")
-                    .speciality("Cardiology")
+                    .speciality(Speciality.SPESIALIS_KULIT) 
                     .build();
 
             assertEquals(caregiver1.hashCode(), caregiver2.hashCode());
@@ -195,15 +123,8 @@ class CaregiverTest {
                 .address("Home Address")
                 .workAddress("Work Address")
                 .phoneNumber("1234567890")
-                .speciality("Cardiology")
+                .speciality(Speciality.DOKTER_UMUM) 
                 .role(Role.CAREGIVER)
-                .workingSchedules(new ArrayList<>())
-                .build();
-    }
-
-    private WorkingSchedule createSchedule(DayOfWeek dayOfWeek) {
-        return WorkingSchedule.builder()
-                .dayOfWeek(dayOfWeek)
                 .build();
     }
 }

@@ -18,10 +18,10 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class JwtServiceTest {
+class JwtServiceImplTest {
 
     @InjectMocks
-    private JwtService jwtService;
+    private JwtServiceImpl jwtService;
 
     private final String TEST_SECRET_KEY = "0000000000000000000000000000000000000000000000000000000000000000";
     private final long TEST_EXPIRATION_TIME = 3600000;
@@ -31,7 +31,7 @@ class JwtServiceTest {
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService();
+        jwtService = new JwtServiceImpl();
         ReflectionTestUtils.setField(jwtService, "secretKey", TEST_SECRET_KEY);
         ReflectionTestUtils.setField(jwtService, "jwtExpirationTime", TEST_EXPIRATION_TIME);
     }

@@ -56,6 +56,10 @@ dependencies {
     implementation("org.postgresql:postgresql:42.6.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("me.paulschwarz:spring-dotenv:3.0.0")
+
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("io.micrometer:micrometer-core")
 }
 
 tasks.register<Test>("unitTest") {
